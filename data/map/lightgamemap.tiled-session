@@ -1,0 +1,76 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "testmap.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "Inside.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 8
+        },
+        "inside.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 5.5
+        },
+        "level0.tmx": {
+            "scale": 1.34425,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 400.2231727729217,
+                "y": 200.11158638646089
+            }
+        },
+        "level1.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 484,
+                "y": 139
+            }
+        },
+        "test.tmx": {
+            "scale": 1.34425,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 400.2231727729217,
+                "y": 200.11158638646089
+            }
+        },
+        "testmap.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1199.3333333333333,
+                "y": 2274.333333333333
+            }
+        }
+    },
+    "last.imagePath": "C:/Users/Mr.Rodikolion/PycharmProjects/Smth/pygame_les/pygame_proj/data/map",
+    "map.height": 25,
+    "map.lastUsedFormat": "tmx",
+    "map.layerDataFormat": null,
+    "map.renderOrder": null,
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 50,
+    "openFiles": [
+        "Inside.tsx",
+        "testmap.tmx"
+    ],
+    "project": "lightgamemap.tiled-project",
+    "recentFiles": [
+        "level1.tmx",
+        "testmap.tmx",
+        "Inside.tsx",
+        "inside.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}
