@@ -29,14 +29,15 @@ class MapLoader:
         self.k = self.map.tilewidth
 
         self.chunks = []
+        self.chunk_size = chunk_size
 
         for ychnk in range(self.map.height // chunk_size):
             self.chunks.append([])
             for xchnk in range(self.map.width // chunk_size):
-                chunk = Chunk((xchnk * chunk_size, ychnk * chunk_size), chunk_size, self.map.tilewidth)
+                chunk = Chunk(chunk_size, self.map.tilewidth)
                 for y in range(chunk_size):
                     for x in range(chunk_size):
-                        img = self.map.get_tile_image(x, y, 0)
+                        img = self.map.get_tile_image(chunk_size * xchnk + x, chunk_size * ychnk + y, 0)
                         if img:
                             chunk.add_image(img, (x, y))
 
@@ -75,19 +76,19 @@ class MapLoader:
         #       range(self.map.width)[int(pl_pos[0] - self.tiles_on_surf): int(pl_pos[0] + self.tiles_on_surf)])
 
         self.k = surface.get_width() / self.tiles_on_surf
-        for row in self.chunks:
-            for chunk in row:
-                chunk.draw(surface, (0,0))
+        for y, row in enumerate(self.chunks):
+            for x, chunk in enumerate(row):
+                img = pg.transform.scale(chunk.image, (chunk.image.get_width() * self.k + 1, chunk.image.get_height() * self.k + 1))
+                surface.blit(img, self.pos + (x * self.chunk_size * self.map.tilewidth * self.k, y * self.chunk_size * self.map.tilewidth * self.k))
 
 
 
 class Chunk(pg.sprite.Sprite):
-    def __init__(self, pos, size, tilesize):
+    def __init__(self, size, tilesize):
         super().__init__()
         self.image = pg.Surface((size * tilesize, size * tilesize))
         self.rects = []
         self.pos = pg.Vector2(0, 0)
-        self.local_pos = pg.Vector2(pos)
 
         self.size = size
         self.tilesize = tilesize
@@ -103,4 +104,4 @@ class Chunk(pg.sprite.Sprite):
         self.rects = [rect.move(direction) for rect in self.rects]
 
     def draw(self, surf: pg.Surface, pos: [int, int]):
-        surf.blit(self.image, pos + self.local_pos)
+        surf.blit(self.image, pos)
