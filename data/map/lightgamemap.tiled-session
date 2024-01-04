@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "testmap.tmx",
+    "activeFile": "Inside.tsx",
     "expandedProjectPaths": [
         "."
     ],
@@ -58,14 +58,13 @@
     "map.tileWidth": 16,
     "map.width": 50,
     "openFiles": [
-        "Inside.tsx",
-        "testmap.tmx"
+        "Inside.tsx"
     ],
     "project": "lightgamemap.tiled-project",
     "recentFiles": [
+        "Inside.tsx",
         "level1.tmx",
         "testmap.tmx",
-        "Inside.tsx",
         "inside.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",

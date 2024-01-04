@@ -2,9 +2,9 @@ import pygame as pg
 from math import pi, atan2
 
 try:
-    from Map import MapLoader, GROUND_TILES
+    from Map import MapLoader, GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES
 except ImportError:
-    from game_components.Map import MapLoader, GROUND_TILES
+    from game_components.Map import MapLoader, GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES
 
 PLAYERSPEED = 5
 
@@ -98,24 +98,24 @@ class Player(pg.sprite.Sprite):
 
     def collision(self, collision_map: MapLoader, surf):
         collision, types = collision_map.collide_rect(
-            self.collider_rect.move((self.rect.x, self.rect.y)))
+            self.collider_rect.move((self.rect.x, self.rect.y + 10)))
 
         self.grounded = False
         if collision:
-            self.grounded = True
 
-            # for colis_rect in collision:
-            #     pg.draw.rect(surf, (255, 0, 0), colis_rect)
+            for colis_rect in collision:
+                pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
 
-            ground_collision = tuple(filter(lambda x: x[1] in GROUND_TILES, enumerate(types)))
+            ground_collision = list(filter(lambda x: x[1] in GROUND_TILES + BOX_TILES, enumerate(types)))
             if ground_collision:
-                self.rect.y = collision[ground_collision[0][0]].y - (self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
+                self.grounded = True
+                ground_collision.sort(key=lambda x: collision[x[0]].y)
 
-        # if collision and collision['type'] in GROUND_TILES:
-        #     self.grounded = True
-        #     self.rect.y = collision['rect'].y - (self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
-        # else:
-        #     self.grounded = False
+                pg.draw.rect(surf, (255, 0, 0), collision[ground_collision[-1][0]])
+                print(collision[ground_collision[-1][0]].y - self.collider_rect.bottom, collision[ground_collision[-1][0]], self.collider_rect)
+                if collision[ground_collision[-1][0]].y - self.collider_rect.y - self.collider_rect.h >= 0:
+                    self.rect.y = collision[ground_collision[-1][0]].y - (
+                                self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
 
         self.gravity_force()
 
