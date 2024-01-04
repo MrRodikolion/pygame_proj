@@ -112,10 +112,11 @@ class Player(pg.sprite.Sprite):
                 ground_collision.sort(key=lambda x: collision[x[0]].y)
 
                 pg.draw.rect(surf, (255, 0, 0), collision[ground_collision[-1][0]])
-                print(collision[ground_collision[-1][0]].y - self.collider_rect.bottom, collision[ground_collision[-1][0]], self.collider_rect)
+                print(collision[ground_collision[-1][0]].y - self.collider_rect.bottom,
+                      collision[ground_collision[-1][0]], self.collider_rect)
                 if collision[ground_collision[-1][0]].y - self.collider_rect.y - self.collider_rect.h >= 0:
                     self.rect.y = collision[ground_collision[-1][0]].y - (
-                                self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
+                            self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
 
         self.gravity_force()
 
