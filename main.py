@@ -10,7 +10,7 @@ if __name__ == '__main__':
     screen = pg.display.set_mode(size)
     clock = pg.time.Clock()
 
-    level_map = MapLoader('./data/map/level0.tmx', 300, 5, screen)
+    level_map = MapLoader('./data/map/level0.tmx', 300, 25, screen)
 
     plg = pg.sprite.Group()
     player = Player(0 * (screen.get_width() / level_map.tiles_on_surf + 1),

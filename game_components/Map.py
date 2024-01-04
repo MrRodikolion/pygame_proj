@@ -44,11 +44,12 @@ class MapLoader:
                 self.chunks[-1].append(chunk)
 
     def collide_rect(self, rect: pg.Rect):
+        colisions = []
         for row in self.chunks:
             for chunk in row:
-                colis = rect.collidelist(chunk.rects)
-                if colis != -1:
-                    return chunk.rects[colis]
+                colis = rect.collidelistall(chunk.rects)
+                colisions += [chunk.rects[c] for c in colis]
+
         # colis = [(c % self.map.height, c // self.map.height, c) for c in rect.collidelistall(self.tiles_rect)]
         # colis = rect.collidelist(self.tiles_rect)
         # if colis != -1:
@@ -58,7 +59,7 @@ class MapLoader:
         #     return {'rect': collider,
         #             'type': collider_type}
 
-        return False
+        return colisions
 
     def update_pos(self, dpos):
         self.pos += pg.Vector2(dpos)
@@ -99,8 +100,10 @@ class Chunk(pg.sprite.Sprite):
     def add_image(self, img: pg.Surface, pos: [int, int]):
         self.image.blit(img, (pos[0] * self.tilesize, pos[1] * self.tilesize))
 
-        rect = img.get_rect().move((pos[0] * self.tilesize * self.k + self.localpos[0] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2.5,
-                                    pos[1] * self.tilesize * self.k + self.localpos[1] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2.5))
+        rect = img.get_rect().move((pos[0] * self.tilesize * self.k + self.localpos[
+                                        0] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2.5,
+                                    pos[1] * self.tilesize * self.k + self.localpos[
+                                        1] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2.5))
         self.rects.append(rect.scale_by(self.k, self.k))
 
     def update(self, direction):
