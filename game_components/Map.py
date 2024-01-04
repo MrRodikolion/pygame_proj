@@ -20,13 +20,13 @@ class Camera:
 
 
 class MapLoader:
-    def __init__(self, map_file, tiles_on_surf, chunk_size):
+    def __init__(self, map_file, tiles_on_surf, chunk_size, surf: pg.Surface):
         self.map = pytmx.load_pygame(map_file)
         self.tiles_on_surf = tiles_on_surf
 
         self.pos = pg.Vector2(0, 0)
 
-        self.k = self.map.tilewidth
+        self.k = surf.get_width() / self.tiles_on_surf
 
         self.chunks = []
         self.chunk_size = chunk_size
@@ -34,7 +34,7 @@ class MapLoader:
         for ychnk in range(self.map.height // chunk_size):
             self.chunks.append([])
             for xchnk in range(self.map.width // chunk_size):
-                chunk = Chunk(chunk_size, self.map.tilewidth)
+                chunk = Chunk((xchnk, ychnk), chunk_size, self.map.tilewidth, self.k)
                 for y in range(chunk_size):
                     for x in range(chunk_size):
                         img = self.map.get_tile_image(chunk_size * xchnk + x, chunk_size * ychnk + y, 0)
@@ -43,10 +43,12 @@ class MapLoader:
 
                 self.chunks[-1].append(chunk)
 
-        print(self.chunks)
-
     def collide_rect(self, rect: pg.Rect):
-
+        for row in self.chunks:
+            for chunk in row:
+                colis = rect.collidelist(chunk.rects)
+                if colis != -1:
+                    return chunk.rects[colis]
         # colis = [(c % self.map.height, c // self.map.height, c) for c in rect.collidelistall(self.tiles_rect)]
         # colis = rect.collidelist(self.tiles_rect)
         # if colis != -1:
@@ -55,18 +57,14 @@ class MapLoader:
         #     collider_type = self.map.tiledgidmap[gid]
         #     return {'rect': collider,
         #             'type': collider_type}
+
         return False
 
     def update_pos(self, dpos):
-        pass
-        # self.pos += pg.Vector2(dpos)
-        # self.tiles_rect = []
-        #
-        # for y in range(self.map.height):
-        #     for x in range(self.map.width):
-        #         img = self.map.get_tile_image(x, y, 0)
-        #         if img:
-        #             self.tiles_rect.append(pg.Rect(self.pos + (x * self.k, y * self.k), (self.k + 1, self.k + 1)))
+        self.pos += pg.Vector2(dpos)
+        for row in self.chunks:
+            for chunk in row:
+                chunk.update(dpos)
 
     def draw(self, surface: pg.Surface, pl_pos: [int, int]):
         # self.tiles_rect = []
@@ -78,17 +76,22 @@ class MapLoader:
         self.k = surface.get_width() / self.tiles_on_surf
         for y, row in enumerate(self.chunks):
             for x, chunk in enumerate(row):
-                img = pg.transform.scale(chunk.image, (chunk.image.get_width() * self.k + 1, chunk.image.get_height() * self.k + 1))
-                surface.blit(img, self.pos + (x * self.chunk_size * self.map.tilewidth * self.k, y * self.chunk_size * self.map.tilewidth * self.k))
-
+                img = pg.transform.scale(chunk.image,
+                                         (chunk.image.get_width() * self.k + 1, chunk.image.get_height() * self.k + 1))
+                surface.blit(img, self.pos + (
+                    x * self.chunk_size * self.map.tilewidth * self.k,
+                    y * self.chunk_size * self.map.tilewidth * self.k))
 
 
 class Chunk(pg.sprite.Sprite):
-    def __init__(self, size, tilesize):
+    def __init__(self, pos, size, tilesize, k):
         super().__init__()
         self.image = pg.Surface((size * tilesize, size * tilesize))
         self.rects = []
         self.pos = pg.Vector2(0, 0)
+        self.localpos = pos
+
+        self.k = k
 
         self.size = size
         self.tilesize = tilesize
@@ -96,11 +99,11 @@ class Chunk(pg.sprite.Sprite):
     def add_image(self, img: pg.Surface, pos: [int, int]):
         self.image.blit(img, (pos[0] * self.tilesize, pos[1] * self.tilesize))
 
-        self.rects.append(img.get_rect().move((pos[0] * self.tilesize, pos[1] * self.tilesize)))
+        rect = img.get_rect().move((pos[0] * self.tilesize * self.k + self.localpos[0] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2,
+                                    pos[1] * self.tilesize * self.k + self.localpos[1] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2))
+        self.rects.append(rect.scale_by(self.k, self.k))
 
     def update(self, direction):
-        self.pos += direction
-
         self.rects = [rect.move(direction) for rect in self.rects]
 
     def draw(self, surf: pg.Surface, pos: [int, int]):

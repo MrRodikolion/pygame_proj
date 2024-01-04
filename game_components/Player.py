@@ -96,19 +96,25 @@ class Player(pg.sprite.Sprite):
         if self.grounded:
             self.vgf = -20
 
-    def collision(self, collision_map: MapLoader):
+    def collision(self, collision_map: MapLoader, surf):
         collision = collision_map.collide_rect(
             self.collider_rect.move((self.rect.x, self.rect.y)))
 
-        if collision and collision['type'] in GROUND_TILES:
+        self.grounded = False
+        if collision:
             self.grounded = True
-            self.rect.y = collision['rect'].y - (self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
-        else:
-            self.grounded = False
+            pg.draw.rect(surf, (255, 0, 0), collision)
+            self.rect.y = collision.y - (self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
+
+        # if collision and collision['type'] in GROUND_TILES:
+        #     self.grounded = True
+        #     self.rect.y = collision['rect'].y - (self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
+        # else:
+        #     self.grounded = False
 
         self.gravity_force()
 
-    def update(self, collision_map: MapLoader):
+    def update(self, collision_map: MapLoader, surf):
         mouse_pos = pg.Vector2(pg.mouse.get_pos())
         rel_x, rel_y = mouse_pos - self.rect.center
         angle = (- 180 / pi) * atan2(rel_y, rel_x)
@@ -117,7 +123,7 @@ class Player(pg.sprite.Sprite):
 
         self.handle_keys()
 
-        self.collision(collision_map)
+        self.collision(collision_map, surf)
 
 
 class Dark(pg.sprite.Sprite):
