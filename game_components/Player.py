@@ -97,17 +97,19 @@ class Player(pg.sprite.Sprite):
             self.vgf = -20
 
     def collision(self, collision_map: MapLoader, surf):
-        collision = collision_map.collide_rect(
+        collision, types = collision_map.collide_rect(
             self.collider_rect.move((self.rect.x, self.rect.y)))
-
-        print(collision)
 
         self.grounded = False
         if collision:
             self.grounded = True
-            for colis_rect in collision:
-                pg.draw.rect(surf, (255, 0, 0), colis_rect)
-            self.rect.y = collision[0].y - (self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
+
+            # for colis_rect in collision:
+            #     pg.draw.rect(surf, (255, 0, 0), colis_rect)
+
+            ground_collision = tuple(filter(lambda x: x[1] in GROUND_TILES, enumerate(types)))
+            if ground_collision:
+                self.rect.y = collision[ground_collision[0][0]].y - (self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
 
         # if collision and collision['type'] in GROUND_TILES:
         #     self.grounded = True

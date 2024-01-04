@@ -31,6 +31,8 @@ if __name__ == '__main__':
 
         dark.overlap_dark(player.mask, player.rect[:2])
 
+        plg.update(level_map, screen)
+
         camera.update(player.rect, size)
         camera.apply(player.rect)
         level_map.update_pos((camera.dx, camera.dy))
@@ -41,11 +43,10 @@ if __name__ == '__main__':
         blg.draw(screen)
         plg.draw(screen)
 
-        for row in level_map.chunks:
-            for chunk in row:
-                for rct in chunk.rects:
-                    pg.draw.rect(screen, (0, 255, 0), rct, 1)
+        # for row in level_map.chunks:
+        #     for chunk in row:
+        #         for rct in chunk.rects:
+        #             pg.draw.rect(screen, (0, 255, 0), rct, 1)
 
-        plg.update(level_map, screen)
 
         pg.display.flip()
