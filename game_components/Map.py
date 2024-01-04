@@ -99,8 +99,8 @@ class Chunk(pg.sprite.Sprite):
     def add_image(self, img: pg.Surface, pos: [int, int]):
         self.image.blit(img, (pos[0] * self.tilesize, pos[1] * self.tilesize))
 
-        rect = img.get_rect().move((pos[0] * self.tilesize * self.k + self.localpos[0] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2,
-                                    pos[1] * self.tilesize * self.k + self.localpos[1] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2))
+        rect = img.get_rect().move((pos[0] * self.tilesize * self.k + self.localpos[0] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2.5,
+                                    pos[1] * self.tilesize * self.k + self.localpos[1] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2.5))
         self.rects.append(rect.scale_by(self.k, self.k))
 
     def update(self, direction):
