@@ -30,15 +30,16 @@ class MapLoader:
 
         self.pos = pg.Vector2(0, 0)
 
-        self.k = surf.get_width() / self.tiles_on_surf
+        self.tilesize = surf.get_width() / self.tiles_on_surf
 
         self.chunks = []
         self.chunk_size = chunk_size
+        self.chunks_area = ((0, 0), (0, 0))
 
         for ychnk in range(self.map.height // chunk_size):
             self.chunks.append([])
             for xchnk in range(self.map.width // chunk_size):
-                chunk = Chunk((xchnk, ychnk), chunk_size, self.map.tilewidth, self.k)
+                chunk = Chunk((xchnk, ychnk), chunk_size, self.map.tilewidth, self.tilesize)
                 for y in range(chunk_size):
                     for x in range(chunk_size):
                         img = self.map.get_tile_image(chunk_size * xchnk + x, chunk_size * ychnk + y, 0)
@@ -47,11 +48,21 @@ class MapLoader:
 
                 self.chunks[-1].append(chunk)
 
+    def set_visible_chunks(self, player_pos):
+        player_pos -= self.pos
+
+        tilex, tiley = (int(player_pos[0] // (self.map.tilewidth * self.tilesize)),
+                        int(player_pos[1] // (self.map.tilewidth * self.tilesize)))
+
+        chunkx, chunky = tilex // self.chunk_size, tiley // self.chunk_size
+
+        self.chunks[chunky][chunkx].visible = True
+
     def collide_rect(self, rect: pg.Rect):
         collisions = []
         collider_types = []
-        for row in self.chunks:
-            for chunk in row:
+        for row in self.chunks[self.chunks_area[1][0]: self.chunks_area[1][1]]:
+            for chunk in row[self.chunks_area[0][0]: self.chunks_area[0][1]]:
                 colis = rect.collidelistall(chunk.rects)
                 collisions += [chunk.rects[c] for c in colis]
                 collider_types += [self.map.tiledgidmap[
@@ -67,21 +78,31 @@ class MapLoader:
             for chunk in row:
                 chunk.update(dpos)
 
-    def draw(self, surface: pg.Surface):
-        # self.tiles_rect = []
-        #
-        # pl_pos = (-self.pos + pg.Vector2(surface.get_size()) // 2) // self.map.tilewidth
-        # print(range(self.map.width)[int(pl_pos[0] - self.tiles_on_surf): int(pl_pos[0] + self.tiles_on_surf)],
-        #       range(self.map.width)[int(pl_pos[0] - self.tiles_on_surf): int(pl_pos[0] + self.tiles_on_surf)])
+    def set_visible_chunks(self, player_pos):
+        player_pos -= self.pos
 
-        self.k = surface.get_width() / self.tiles_on_surf
-        for y, row in enumerate(self.chunks):
-            for x, chunk in enumerate(row):
+        tilex, tiley = (int(player_pos[0] // (self.map.tilewidth * self.tilesize)),
+                        int(player_pos[1] // (self.map.tilewidth * self.tilesize)))
+
+        count_chunks = 5
+
+        chunkx0 = max(0, tilex // self.chunk_size - count_chunks // 2)
+        chunkx1 = chunkx0 + count_chunks
+        chunky0 = max(0, tiley // self.chunk_size - count_chunks // 2)
+        chunky1 = chunky0 + count_chunks
+
+        self.chunks_area = ((chunkx0, chunkx1), (chunky0, chunky1))
+
+    def draw(self, surface: pg.Surface):
+        # self.tilesize = surface.get_width() / self.tiles_on_surf
+        for y, row in tuple(enumerate(self.chunks))[self.chunks_area[1][0]: self.chunks_area[1][1]]:
+            for x, chunk in tuple(enumerate(row))[self.chunks_area[0][0]: self.chunks_area[0][1]]:
                 img = pg.transform.scale(chunk.image,
-                                         (chunk.image.get_width() * self.k + 1, chunk.image.get_height() * self.k + 1))
+                                         (chunk.size * self.tilesize * self.map.tilewidth + 1,
+                                          chunk.size * self.tilesize * self.map.tilewidth + 1))
                 surface.blit(img, self.pos + (
-                    x * self.chunk_size * self.map.tilewidth * self.k,
-                    y * self.chunk_size * self.map.tilewidth * self.k))
+                                    x * chunk.size * self.map.tilewidth * self.tilesize,
+                                    y * chunk.size * self.map.tilewidth * self.tilesize))
 
 
 class Chunk(pg.sprite.Sprite):
@@ -96,14 +117,16 @@ class Chunk(pg.sprite.Sprite):
         self.size = size
         self.tilesize = tilesize
 
+        self.visible = False
+
     def add_image(self, img: pg.Surface, pos: [int, int]):
         self.image.blit(img, (pos[0] * self.tilesize, pos[1] * self.tilesize))
 
-        rect = img.get_rect().move((pos[0] * self.tilesize * self.k + self.localpos[
-            0] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2.5,
-                                    pos[1] * self.tilesize * self.k + self.localpos[
-                                        1] * self.size * self.tilesize * self.k + self.tilesize * self.k // 2.5))
-        self.rects.append(rect.scale_by(self.k, self.k))
+        rect = img.get_rect()
+        rect = rect.scale_by(self.k, self.k)
+        rect = rect.move((self.localpos[0] * self.size * self.tilesize * self.k + pos[0] * self.tilesize * self.k + rect.w / 3.214,
+                          self.localpos[1] * self.size * self.tilesize * self.k + pos[1] * self.tilesize * self.k + rect.h / 3.214))
+        self.rects.append(rect)
 
     def update(self, direction):
         self.rects = [rect.move(direction) for rect in self.rects]

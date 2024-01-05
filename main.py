@@ -6,17 +6,17 @@ from game_components.Player import Player, Dark
 if __name__ == '__main__':
     pg.init()
 
-    size = screen_w, screen_h = 16 * 80, 9 * 80
+    size = screen_w, screen_h = 16 * 100, 9 * 100
     screen = pg.display.set_mode(size)
     pg.mouse.set_visible(False)
 
     clock = pg.time.Clock()
 
-    level_map = MapLoader('./data/map/level0.tmx', 220, 25, screen)
+    level_map = MapLoader('./data/map/level0.tmx', 480, 5, screen)
 
     player = Player(screen,
-                    50 * (screen.get_width() / level_map.tiles_on_surf + 1),
-                    420 * (screen.get_height() / level_map.tiles_on_surf + 1))
+                    0 * (screen.get_width() / level_map.tiles_on_surf + 1),
+                    0 * (screen.get_height() / level_map.tiles_on_surf + 1))
 
     camera = Camera()
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
             if event.type == pg.QUIT:
                 running = False
                 break
-        clock.tick()
+        clock.tick(60)
 
         dark.overlap_dark(player.mask, player.rect[:2])
         player.update(level_map, screen)
@@ -38,17 +38,20 @@ if __name__ == '__main__':
         camera.apply(player.rect)
         level_map.update_pos((camera.dx, camera.dy))
 
+        level_map.set_visible_chunks(player.rect.center)
+
         screen.fill((50, 50, 50))
 
         level_map.draw(screen)
         blg.draw(screen)
         player.draw(screen)
 
+        # print(level_map.chunks[0][0].rects[0].topleft - level_map.pos.xy, level_map.chunks[0][0].rects[0])
+
         # for row in level_map.chunks:
         #     for chunk in row:
         #         for rct in chunk.rects:
         #             pg.draw.rect(screen, (0, 255, 0), rct, 1)
-
 
         pg.draw.circle(screen, (255, 255, 255), pg.mouse.get_pos(), 5, 2)
 

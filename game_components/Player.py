@@ -10,20 +10,23 @@ except ImportError:
 
 PLAYERSPEED = 5
 
-flashlight_w, flashlight_h = 250, 200
+flashlight_w, flashlight_h = 200, 200
+flashlight_angle = 40
 light_area_kw, light_area_kh = 3, 1.6
-collider_w, collider_h = 80, 160
+collider_w = 40
+collider_h = 2 * collider_w
 
 
 class Player(pg.sprite.Sprite):
     def __init__(self, surface, x, y):
         super().__init__()
 
-        self.s_flashlight_image = pg.Surface((flashlight_w, flashlight_h)).convert_alpha()
-        self.s_flashlight_image.fill((255, 255, 255, 0))
         self.flashlight_points = (
-            pg.math.Vector2(0, -15), pg.math.Vector2(flashlight_w, -flashlight_h / 2),
-            pg.math.Vector2(flashlight_w, flashlight_h / 2), pg.math.Vector2(0, 15))
+            pg.math.Vector2(0, -15),
+            *(pg.Vector2(flashlight_w, 0).rotate(-flashlight_angle / 2).rotate(a) for a in range(flashlight_angle)),
+            pg.math.Vector2(0, 15))
+        self.s_flashlight_image = pg.Surface((flashlight_w * 2, flashlight_h * 2)).convert_alpha()
+        self.s_flashlight_image.fill((255, 255, 255, 0))
 
         self.flashlight_vcentr = pg.Vector2(10, flashlight_h / 2)
         pg.draw.polygon(self.s_flashlight_image, (0, 0, 0),
@@ -106,8 +109,10 @@ class Player(pg.sprite.Sprite):
             self.vgf = -20
 
     def collision(self, collision_map: MapLoader, surf):
-        collision, types = collision_map.collide_rect(
-            self.collider_rect.move((self.rect.x, self.rect.y + 10)))
+        to_collide_rect = self.collider_rect.move((self.rect.x, self.rect.y - 10))
+        to_collide_rect.h += 20
+
+        collision, types = collision_map.collide_rect(to_collide_rect)
 
         self.grounded = False
         if collision:
@@ -143,7 +148,7 @@ class Player(pg.sprite.Sprite):
 
                 upper_ground_collision = tuple(
                     filter(lambda x: -self.collider_rect.h >= x.y - self.collider_rect.bottom - self.rect.y and
-                                     abs(x.centerx - self.collider_rect.centerx - self.rect.x) <= self.collider_rect.w / 1.5,
+                                     abs(x.centerx - self.collider_rect.centerx - self.rect.x) <= self.collider_rect.w,
                            ground_collision))
 
                 if upper_ground_collision:
