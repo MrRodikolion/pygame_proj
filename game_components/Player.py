@@ -114,33 +114,45 @@ class Player(pg.sprite.Sprite):
             # for colis_rect in collision:
             #     pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
 
-            ground_collision = list(filter(lambda x: x[1] in GROUND_TILES + BOX_TILES, enumerate(types)))
+            ground_collision_types = list(filter(lambda x: x[1] in GROUND_TILES + BOX_TILES, enumerate(types)))
 
-            if ground_collision:
+            if ground_collision_types:
+                ground_collision = tuple(map(lambda x: collision[x[0]], ground_collision_types))
+                # for colis_rect in ground_collision:
+                #     pg.draw.rect(surf, (255, 0, 0), colis_rect, 10)
 
                 down_ground_collision = list(filter(lambda x: x.y - self.collider_rect.bottom - self.rect.y >= -10,
-                                                    map(lambda x: collision[x[0]], ground_collision)))
+                                                    ground_collision))
 
                 if down_ground_collision:
                     self.grounded = True
                     self.rect.y = min(map(lambda x: x.y, down_ground_collision)) - (
                             self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
 
-                upper_ground_collision = list(filter(lambda x: x.y - self.collider_rect.bottom - self.rect.y < -10,
-                                                     map(lambda x: collision[x[0]], ground_collision)))
-                if upper_ground_collision:
-                    upper_ground_collision.sort(key=lambda x: abs(x.centerx - self.rect.x - self.collider_rect.centerx))
-                    nearest_collision = upper_ground_collision[0]
-                    if nearest_collision.centerx - self.rect.x - self.collider_rect.centerx >= 0:
-                        self.rect.x = upper_ground_collision[0].left - self.collider_rect.right
-                    else:
-                        self.rect.x = upper_ground_collision[0].right - self.collider_rect.left
+                center_ground_collision = list(
+                    filter(lambda x: -self.collider_rect.h < x.y - self.collider_rect.bottom - self.rect.y < -10,
+                           ground_collision))
 
-            for colis_rect in map(lambda x: collision[x[0]], ground_collision):
-                pg.draw.rect(surf, (255, 0, 0), colis_rect, 10)
+                if center_ground_collision:
+                    nearest_collision = min(center_ground_collision,
+                                            key=lambda x: abs(x.centerx - self.rect.x - self.collider_rect.centerx))
+                    if nearest_collision.centerx - self.rect.x - self.collider_rect.centerx >= 0:
+                        self.rect.x = center_ground_collision[0].left - self.collider_rect.right
+                    else:
+                        self.rect.x = center_ground_collision[0].right - self.collider_rect.left
+
+                upper_ground_collision = tuple(
+                    filter(lambda x: -self.collider_rect.h >= x.y - self.collider_rect.bottom - self.rect.y and
+                                     abs(x.centerx - self.collider_rect.centerx - self.rect.x) <= self.collider_rect.w / 1.5,
+                           ground_collision))
+
+                if upper_ground_collision:
+                    lowes_rect = max(upper_ground_collision, key=lambda x: x.bottom)
+                    self.rect.y = lowes_rect.bottom - (self.rect.h - self.collider_rect.h) / 2
+                    self.vgf = 10
 
             bonus_collision = map(lambda x: collision[x[0]],
-                                  filter(lambda x: x[1] in (BONUS1_TILE, ), enumerate(types)))
+                                  filter(lambda x: x[1] in (BONUS1_TILE,), enumerate(types)))
 
             for bonus_rect in bonus_collision:
                 self.ui.bonus_counter.count_bonus(bonus_rect.move(-collision_map.pos), 1)
