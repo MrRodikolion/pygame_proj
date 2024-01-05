@@ -89,7 +89,6 @@ class Chunk(pg.sprite.Sprite):
         super().__init__()
         self.image = pg.Surface((size * tilesize, size * tilesize))
         self.rects = []
-        self.pos = pg.Vector2(0, 0)
         self.localpos = pos
 
         self.k = k

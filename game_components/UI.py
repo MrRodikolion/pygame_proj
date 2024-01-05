@@ -30,6 +30,17 @@ class BonusCounter(pg.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
+        self.collected_rects = []
+
+    def count_bonus(self, rect: pg.Rect, c):
+        if rect in self.collected_rects:
+            return False
+
+        self.count += c
+        self.collected_rects.append(rect)
+
+        return True
+
     def update(self, *args, **kwargs):
         self.image.fill((0, 0, 0, 0))
 

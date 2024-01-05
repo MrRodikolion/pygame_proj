@@ -109,8 +109,6 @@ class Player(pg.sprite.Sprite):
         collision, types = collision_map.collide_rect(
             self.collider_rect.move((self.rect.x, self.rect.y + 10)))
 
-        # print(types)
-
         self.grounded = False
         if collision:
             # for colis_rect in collision:
@@ -141,6 +139,12 @@ class Player(pg.sprite.Sprite):
             for colis_rect in map(lambda x: collision[x[0]], ground_collision):
                 pg.draw.rect(surf, (255, 0, 0), colis_rect, 10)
 
+            bonus_collision = map(lambda x: collision[x[0]],
+                                  filter(lambda x: x[1] in (BONUS1_TILE, ), enumerate(types)))
+
+            for bonus_rect in bonus_collision:
+                self.ui.bonus_counter.count_bonus(bonus_rect.move(-collision_map.pos), 1)
+
         self.gravity_force()
 
     def update(self, collision_map: MapLoader, surf):
@@ -153,6 +157,8 @@ class Player(pg.sprite.Sprite):
         self.handle_keys()
 
         self.collision(collision_map, surf)
+
+        self.ui.update()
 
     def draw(self, surface: pg.Surface):
         surface.blit(self.image, self.rect)
