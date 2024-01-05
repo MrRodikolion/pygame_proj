@@ -121,10 +121,12 @@ class Player(pg.sprite.Sprite):
                 upper_ground_collision = list(filter(lambda x: x.y - self.collider_rect.bottom - self.rect.y < -10,
                                                      map(lambda x: collision[x[0]], ground_collision)))
                 if upper_ground_collision:
-                    upper_ground_collision.sort(key=lambda x: x.x - self.rect.x - self.collider_rect.x)
-                    # self.rect.x = upper_ground_collision[0] - (
-                    #         self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
-                    print(upper_ground_collision)
+                    upper_ground_collision.sort(key=lambda x: abs(x.centerx - self.rect.x - self.collider_rect.centerx))
+                    nearest_collision = upper_ground_collision[0]
+                    if nearest_collision.centerx - self.rect.x - self.collider_rect.centerx >= 0:
+                        self.rect.x = upper_ground_collision[0].left - self.collider_rect.right
+                    else:
+                        self.rect.x = upper_ground_collision[0].right - self.collider_rect.left
 
         self.gravity_force()
 
