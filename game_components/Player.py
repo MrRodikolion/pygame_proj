@@ -40,7 +40,7 @@ class Player(pg.sprite.Sprite):
 
         self.flashlight_pos = pg.Vector2(self.collider_rect.center)
         self.light_image.blit(self.s_flashlight_image, self.flashlight_pos - self.flashlight_vcentr)
-        pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(1.6, 1.6))
+        pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(1.9, 1.6))
 
         # debug lines
         # pg.draw.rect(self.image, (0, 255, 0), self.image.get_rect(), 1)
@@ -67,7 +67,7 @@ class Player(pg.sprite.Sprite):
         rotated_image_rect = rotated_image.get_rect(center=rotated_image_center)
 
         self.light_image = pg.Surface(self.glob_image_size, pg.SRCALPHA)
-        pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(1.6, 1.6))
+        pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(3, 1.6))
         self.light_image.blit(rotated_image, rotated_image_rect)
         self.mask = pg.mask.from_surface(self.light_image)
 
@@ -107,16 +107,24 @@ class Player(pg.sprite.Sprite):
                 pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
 
             ground_collision = list(filter(lambda x: x[1] in GROUND_TILES + BOX_TILES, enumerate(types)))
-            if ground_collision:
-                self.grounded = True
-                ground_collision.sort(key=lambda x: collision[x[0]].y)
 
-                pg.draw.rect(surf, (255, 0, 0), collision[ground_collision[-1][0]])
-                print(collision[ground_collision[-1][0]].y - self.collider_rect.bottom,
-                      collision[ground_collision[-1][0]], self.collider_rect)
-                if collision[ground_collision[-1][0]].y - self.collider_rect.y - self.collider_rect.h >= 0:
-                    self.rect.y = collision[ground_collision[-1][0]].y - (
+            if ground_collision:
+
+                down_ground_collision = list(filter(lambda x: x.y - self.collider_rect.bottom - self.rect.y >= -10,
+                                                    map(lambda x: collision[x[0]], ground_collision)))
+
+                if down_ground_collision:
+                    self.grounded = True
+                    self.rect.y = min(map(lambda x: x.y, down_ground_collision)) - (
                             self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
+
+                upper_ground_collision = list(filter(lambda x: x.y - self.collider_rect.bottom - self.rect.y < -10,
+                                                     map(lambda x: collision[x[0]], ground_collision)))
+                if upper_ground_collision:
+                    upper_ground_collision.sort(key=lambda x: x.x - self.rect.x - self.collider_rect.x)
+                    # self.rect.x = upper_ground_collision[0] - (
+                    #         self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
+                    print(upper_ground_collision)
 
         self.gravity_force()
 
