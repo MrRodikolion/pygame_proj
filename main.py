@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     clock = pg.time.Clock()
 
-    level_map = MapLoader('./data/map/level0.tmx', 220, 25, screen)
+    level_map = MapLoader('./data/map/level0.tmx', 220, 5, screen)
 
     plg = pg.sprite.Group()
     player = Player(0 * (screen.get_width() / level_map.tiles_on_surf + 1),
@@ -32,8 +32,7 @@ if __name__ == '__main__':
         clock.tick()
 
         dark.overlap_dark(player.mask, player.rect[:2])
-        
-        plg.update(level_map, screen)
+
 
         camera.update(player.rect, size)
         camera.apply(player.rect)
@@ -41,7 +40,7 @@ if __name__ == '__main__':
 
         screen.fill((50, 50, 50))
 
-        level_map.draw(screen, player.rect.center)
+        level_map.draw(screen)
         blg.draw(screen)
         plg.draw(screen)
 
@@ -49,6 +48,8 @@ if __name__ == '__main__':
         #     for chunk in row:
         #         for rct in chunk.rects:
         #             pg.draw.rect(screen, (0, 255, 0), rct, 1)
+
+        plg.update(level_map, screen)
 
         pg.draw.circle(screen, (255, 255, 255), pg.mouse.get_pos(), 5, 2)
 

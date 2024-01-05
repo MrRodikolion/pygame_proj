@@ -55,18 +55,9 @@ class MapLoader:
                 colis = rect.collidelistall(chunk.rects)
                 collisions += [chunk.rects[c] for c in colis]
                 collider_types += [self.map.tiledgidmap[
-                                      self.map.get_tile_gid(chunk.localpos[0] * self.chunk_size + c % self.map.height,
-                                                            chunk.localpos[1] * self.chunk_size + c // self.map.height,
-                                                            0)] for c in colis]
-
-        # colis = [(c % self.map.height, c // self.map.height, c) for c in rect.collidelistall(self.tiles_rect)]
-        # colis = rect.collidelist(self.tiles_rect)
-        # if colis != -1:
-        #     collider = self.tiles_rect[colis]
-        #     gid = self.map.get_tile_gid(colis % self.map.height, colis // self.map.height, 0) + 1
-        #     collider_type = self.map.tiledgidmap[gid]
-        #     return {'rect': collider,
-        #             'type': collider_type}
+                                       self.map.get_tile_gid(chunk.localpos[0] * self.chunk_size + c % self.chunk_size,
+                                                             chunk.localpos[1] * self.chunk_size + c // self.chunk_size,
+                                                             0)] for c in colis]
 
         return tuple(collisions), tuple(collider_types)
 
@@ -76,7 +67,7 @@ class MapLoader:
             for chunk in row:
                 chunk.update(dpos)
 
-    def draw(self, surface: pg.Surface, pl_pos: [int, int]):
+    def draw(self, surface: pg.Surface):
         # self.tiles_rect = []
         #
         # pl_pos = (-self.pos + pg.Vector2(surface.get_size()) // 2) // self.map.tilewidth

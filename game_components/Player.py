@@ -100,9 +100,10 @@ class Player(pg.sprite.Sprite):
         collision, types = collision_map.collide_rect(
             self.collider_rect.move((self.rect.x, self.rect.y + 10)))
 
+        # print(types)
+
         self.grounded = False
         if collision:
-
             # for colis_rect in collision:
             #     pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
 
@@ -127,6 +128,9 @@ class Player(pg.sprite.Sprite):
                         self.rect.x = upper_ground_collision[0].left - self.collider_rect.right
                     else:
                         self.rect.x = upper_ground_collision[0].right - self.collider_rect.left
+
+            for colis_rect in map(lambda x: collision[x[0]], ground_collision):
+                pg.draw.rect(surf, (255, 0, 0), colis_rect, 10)
 
         self.gravity_force()
 
