@@ -3,16 +3,22 @@ from math import pi, atan2
 
 try:
     from Map import MapLoader, GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES
+    from UI import UI
 except ImportError:
     from game_components.Map import MapLoader, GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES
+    from game_components.UI import UI
 
 PLAYERSPEED = 5
 
+flashlight_w, flashlight_h = 250, 200
+light_area_kw, light_area_kh = 3, 1.6
+collider_w, collider_h = 80, 160
+
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, x, y, group):
-        super().__init__(group)
-        flashlight_w, flashlight_h = 250, 200
+    def __init__(self, surface, x, y):
+        super().__init__()
+
         self.s_flashlight_image = pg.Surface((flashlight_w, flashlight_h)).convert_alpha()
         self.s_flashlight_image.fill((255, 255, 255, 0))
         self.flashlight_points = (
@@ -36,11 +42,12 @@ class Player(pg.sprite.Sprite):
         self.rect.x += x - self.rect.w / 2
         self.rect.y += y - self.rect.h
 
-        self.collider_rect = pg.Rect(self.rect.w / 2 - 40, self.rect.h / 2 - 80, 80, 160)
+        self.collider_rect = pg.Rect(self.rect.w / 2 - collider_w / 2, self.rect.h / 2 - collider_h / 2,
+                                     collider_w, collider_h)
 
         self.flashlight_pos = pg.Vector2(self.collider_rect.center)
         self.light_image.blit(self.s_flashlight_image, self.flashlight_pos - self.flashlight_vcentr)
-        pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(1.9, 1.6))
+        pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(light_area_kw, light_area_kh))
 
         # debug lines
         # pg.draw.rect(self.image, (0, 255, 0), self.image.get_rect(), 1)
@@ -52,6 +59,8 @@ class Player(pg.sprite.Sprite):
         self.vgf = 10
 
         self.grounded = False
+
+        self.ui = UI(surface)
 
     def rotate_light(self, angle):
         pos = self.flashlight_pos
@@ -67,7 +76,7 @@ class Player(pg.sprite.Sprite):
         rotated_image_rect = rotated_image.get_rect(center=rotated_image_center)
 
         self.light_image = pg.Surface(self.glob_image_size, pg.SRCALPHA)
-        pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(3, 1.6))
+        pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(light_area_kw, light_area_kh))
         self.light_image.blit(rotated_image, rotated_image_rect)
         self.mask = pg.mask.from_surface(self.light_image)
 
@@ -144,6 +153,10 @@ class Player(pg.sprite.Sprite):
         self.handle_keys()
 
         self.collision(collision_map, surf)
+
+    def draw(self, surface: pg.Surface):
+        surface.blit(self.image, self.rect)
+        self.ui.draw()
 
 
 class Dark(pg.sprite.Sprite):
