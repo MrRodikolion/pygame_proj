@@ -12,12 +12,12 @@ PLAYERSPEED = 5
 class Player(pg.sprite.Sprite):
     def __init__(self, x, y, group):
         super().__init__(group)
-        flashlight_w, flashlight_h = 200, 200
+        flashlight_w, flashlight_h = 250, 200
         self.s_flashlight_image = pg.Surface((flashlight_w, flashlight_h)).convert_alpha()
         self.s_flashlight_image.fill((255, 255, 255, 0))
         self.flashlight_points = (
-            pg.math.Vector2(0, -5), pg.math.Vector2(flashlight_w, -flashlight_h / 2),
-            pg.math.Vector2(flashlight_w, flashlight_h / 2), pg.math.Vector2(0, 5))
+            pg.math.Vector2(0, -15), pg.math.Vector2(flashlight_w, -flashlight_h / 2),
+            pg.math.Vector2(flashlight_w, flashlight_h / 2), pg.math.Vector2(0, 15))
 
         self.flashlight_vcentr = pg.Vector2(10, flashlight_h / 2)
         pg.draw.polygon(self.s_flashlight_image, (0, 0, 0),
@@ -103,8 +103,8 @@ class Player(pg.sprite.Sprite):
         self.grounded = False
         if collision:
 
-            for colis_rect in collision:
-                pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
+            # for colis_rect in collision:
+            #     pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
 
             ground_collision = list(filter(lambda x: x[1] in GROUND_TILES + BOX_TILES, enumerate(types)))
 
