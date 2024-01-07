@@ -20,8 +20,8 @@
             "scale": 1.34425,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 400.2231727729217,
-                "y": 200.11158638646089
+                "x": 398.73535428677707,
+                "y": 199.36767714338845
             }
         },
         "level1.tmx": {
@@ -36,7 +36,7 @@
             "scale": 1.34425,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 400.2231727729217,
+                "x": 399.4792635298494,
                 "y": 200.11158638646089
             }
         },
@@ -50,13 +50,13 @@
         }
     },
     "last.imagePath": "C:/Users/Mr.Rodikolion/PycharmProjects/Smth/pygame_les/pygame_proj/data/map",
-    "map.height": 25,
+    "map.height": 250,
     "map.lastUsedFormat": "tmx",
     "map.layerDataFormat": null,
     "map.renderOrder": null,
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 50,
+    "map.width": 500,
     "openFiles": [
         "Inside.tsx"
     ],

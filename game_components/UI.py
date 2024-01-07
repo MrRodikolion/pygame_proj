@@ -1,3 +1,5 @@
+import types
+
 import pygame as pg
 
 
@@ -50,3 +52,39 @@ class BonusCounter(pg.sprite.Sprite):
         self.image.blit(text, (0, 0))
 
         self.rect = self.image.get_rect()
+
+
+class Button(pg.sprite.Sprite):
+    def __init__(self, x, y, w, h, color, text):
+        super().__init__()
+        self.color = color
+        font = pg.font.Font(None, h)
+        self.text = font.render(text, True, color)
+
+        self.image = pg.Surface((w, h), pg.SRCALPHA)
+        self.image.fill((50, 100, 50, 170))
+
+        self.rect = self.image.get_rect().move(x, y)
+
+        self.pressed = False
+
+    def update(self, *args, **kwargs):
+        mouse_pos = pg.mouse.get_pos()
+        mousecollide = self.rect.collidepoint(mouse_pos)
+
+        if mousecollide and pg.mouse.get_pressed()[0]:
+            self.image.fill((50, 255, 50))
+            self.pressed = True
+            return
+        elif mousecollide:
+            self.image.fill((50, 150, 50, 170))
+            return
+
+        self.image.fill((50, 100, 50, 170))
+        self.pressed = False
+
+    def draw(self, surf):
+        x = self.image.get_width() / 2 - self.text.get_width() / 2
+        y = self.image.get_height() / 2 - self.text.get_height() / 2
+        self.image.blit(self.text, (x, y))
+        surf.blit(self.image, self.rect)

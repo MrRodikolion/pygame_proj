@@ -2,10 +2,12 @@ import pygame as pg
 from math import pi, atan2
 
 try:
-    from Map import MapLoader, GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES
+    from Map import (MapLoader,
+                     GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE)
     from UI import UI
 except ImportError:
-    from game_components.Map import MapLoader, GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES
+    from game_components.Map import (MapLoader,
+                                     GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE)
     from game_components.UI import UI
 
 PLAYERSPEED = 5
@@ -65,6 +67,8 @@ class Player(pg.sprite.Sprite):
 
         self.ui = UI(surface)
 
+        self.finished = False
+
     def rotate_light(self, angle):
         pos = self.flashlight_pos
         originPos = self.flashlight_vcentr
@@ -116,6 +120,10 @@ class Player(pg.sprite.Sprite):
 
         self.grounded = False
         if collision:
+            if FINISH_TILE in types:
+                self.finished = True
+                return
+
             # for colis_rect in collision:
             #     pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
 
@@ -181,24 +189,3 @@ class Player(pg.sprite.Sprite):
         surface.blit(self.image, self.rect)
         self.ui.draw()
 
-
-class Dark(pg.sprite.Sprite):
-    def __init__(self, w, h, group):
-        super().__init__(group)
-        self.image = pg.Surface((w, h)).convert_alpha()
-        self.image.fill((0, 0, 0, 250))
-        self.rect = self.image.get_rect()
-        self.mask = pg.mask.from_surface(self.image)
-
-    def overlap_dark(self, light_mask: pg.mask.Mask, mask_pos):
-        offset = mask_pos
-        if self.mask.overlap(light_mask, offset):
-            new_mask = self.mask.overlap_mask(light_mask, offset)
-            new_surf = new_mask.to_surface().convert_alpha()
-            new_surf.set_colorkey((0, 0, 0))
-            fillclr = pg.Surface(new_surf.get_size(), pg.SRCALPHA)
-            fillclr.fill((0, 0, 0, 250))
-            fillclr.blit(new_surf, (0, 0))
-            fillclr.set_colorkey((255, 255, 255))
-
-            self.image = fillclr
