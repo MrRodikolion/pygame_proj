@@ -2,12 +2,15 @@ import types
 
 import pygame as pg
 
+MAXSTAMINA = 100
+
 
 class UI(pg.sprite.Group):
     def __init__(self, surface: pg.Surface):
         super().__init__()
 
         self.bonus_counter = BonusCounter(surface.get_size(), self)
+        self.stamina_bar = StaminaBar(surface.get_size(), self)
 
         self.surface = surface
 
@@ -52,6 +55,22 @@ class BonusCounter(pg.sprite.Sprite):
         self.image.blit(text, (0, 0))
 
         self.rect = self.image.get_rect()
+
+
+class StaminaBar(pg.sprite.Sprite):
+    def __init__(self, surf_size, group):
+        super().__init__(group)
+
+        self.stamina = MAXSTAMINA
+
+        w, h = surf_size[0] * 0.03, surf_size[1] * 0.4
+        self.image = pg.Surface((w, h), pg.SRCALPHA)
+        self.rect = self.image.get_rect().move(0, surf_size[1] - h)
+
+    def update(self, *args, **kwargs):
+        self.image.fill((0, 0, 0, 0))
+        self.image.fill((255, 153, 0, 200), ((0, 0),
+                                             (self.image.get_width(), self.image.get_height() / 100 * self.stamina)))
 
 
 class Button(pg.sprite.Sprite):

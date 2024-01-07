@@ -2,7 +2,7 @@ import pygame as pg
 import sys
 
 from game_components.Map import MapLoader, Camera, Dark
-from game_components.Player import Player
+from game_components.Player import Player, collider_w
 from game_components.UI import Button
 
 
@@ -117,11 +117,11 @@ if __name__ == '__main__':
 
     clock = pg.time.Clock()
 
-    level_map = MapLoader('./data/map/level0.tmx', 450, 5, screen)
+    level_map = MapLoader('./data/map/level0.tmx', screen_w // collider_w - 2, 5, screen)
 
     player = Player(screen,
-                    0 * (screen.get_width() / level_map.tiles_on_surf + 1),
-                    0 * (screen.get_height() / level_map.tiles_on_surf + 1))
+                    1 * level_map.tilesize + level_map.tilesize // 2,
+                    24 * level_map.tilesize + level_map.tilesize // 2)
 
     camera = Camera()
 

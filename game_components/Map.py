@@ -85,28 +85,28 @@ class MapLoader:
     def set_visible_chunks(self, player_pos):
         player_pos -= self.pos
 
-        tilex, tiley = (int(player_pos[0] // (self.map.tilewidth * self.tilesize)),
-                        int(player_pos[1] // (self.map.tilewidth * self.tilesize)))
+        tilex, tiley = (int(player_pos[0] // self.tilesize),
+                        int(player_pos[1] // self.tilesize))
 
-        count_chunks = 5
+        count_chunks = int((self.tiles_on_surf * self.tilesize) / (self.chunk_size * self.tilesize))
 
         chunkx0 = max(0, tilex // self.chunk_size - count_chunks // 2)
         chunkx1 = chunkx0 + count_chunks
         chunky0 = max(0, tiley // self.chunk_size - count_chunks // 2)
         chunky1 = chunky0 + count_chunks
 
-        self.chunks_area = ((chunkx0, chunkx1), (chunky0, chunky1))
+        self.chunks_area = ((chunkx0, chunkx1 + 1), (chunky0, chunky1))
 
     def draw(self, surface: pg.Surface):
         # self.tilesize = surface.get_width() / self.tiles_on_surf
         for y, row in tuple(enumerate(self.chunks))[self.chunks_area[1][0]: self.chunks_area[1][1]]:
             for x, chunk in tuple(enumerate(row))[self.chunks_area[0][0]: self.chunks_area[0][1]]:
                 img = pg.transform.scale(chunk.image,
-                                         (chunk.size * self.tilesize * self.map.tilewidth + 1,
-                                          chunk.size * self.tilesize * self.map.tilewidth + 1))
+                                         (chunk.size * self.tilesize + 1,
+                                          chunk.size * self.tilesize + 1))
                 surface.blit(img, self.pos + (
-                    x * chunk.size * self.map.tilewidth * self.tilesize,
-                    y * chunk.size * self.map.tilewidth * self.tilesize))
+                    x * chunk.size * self.tilesize,
+                    y * chunk.size * self.tilesize))
 
 
 class Chunk(pg.sprite.Sprite):
@@ -127,10 +127,10 @@ class Chunk(pg.sprite.Sprite):
         self.image.blit(img, (pos[0] * self.tilesize, pos[1] * self.tilesize))
 
         rect = img.get_rect()
-        rect = rect.scale_by(self.k, self.k)
+        rect = rect.scale_by(self.k / self.tilesize, self.k / self.tilesize)
         rect = rect.move(
-            (self.localpos[0] * self.size * self.tilesize * self.k + pos[0] * self.tilesize * self.k + rect.w / 3.214,
-             self.localpos[1] * self.size * self.tilesize * self.k + pos[1] * self.tilesize * self.k + rect.h / 3.214))
+            (self.localpos[0] * self.size * self.k + pos[0] * self.k + rect.w / 3.214,
+             self.localpos[1] * self.size * self.k + pos[1] * self.k + rect.h / 3.214))
         self.rects.append(rect)
 
     def update(self, direction):

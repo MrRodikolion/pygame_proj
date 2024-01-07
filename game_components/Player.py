@@ -4,11 +4,11 @@ from math import pi, atan2
 try:
     from Map import (MapLoader,
                      GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE)
-    from UI import UI
+    from UI import UI, MAXSTAMINA
 except ImportError:
     from game_components.Map import (MapLoader,
                                      GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE)
-    from game_components.UI import UI
+    from game_components.UI import UI, MAXSTAMINA
 
 PLAYERSPEED = 5
 
@@ -45,7 +45,7 @@ class Player(pg.sprite.Sprite):
 
         self.rect = self.light_image.get_rect()
         self.rect.x += x - self.rect.w / 2
-        self.rect.y += y - self.rect.h
+        self.rect.y += y - self.rect.h / 2 - collider_h
 
         self.collider_rect = pg.Rect(self.rect.w / 2 - collider_w / 2, self.rect.h / 2 - collider_h / 2,
                                      collider_w, collider_h)
@@ -69,6 +69,8 @@ class Player(pg.sprite.Sprite):
 
         self.finished = False
 
+        self.on_leader = False
+
     def rotate_light(self, angle):
         pos = self.flashlight_pos
         originPos = self.flashlight_vcentr
@@ -89,24 +91,38 @@ class Player(pg.sprite.Sprite):
 
     def handle_keys(self):
         key = pg.key.get_pressed()
-        if key[pg.K_LSHIFT]:
+        if key[pg.K_LSHIFT] and self.ui.stamina_bar.stamina > 0:
             self.speed = PLAYERSPEED * 2.5
+            self.ui.stamina_bar.stamina -= 1
+        elif key[pg.K_LSHIFT]:
+            self.speed = PLAYERSPEED
         else:
+            if self.ui.stamina_bar.stamina < MAXSTAMINA:
+                self.ui.stamina_bar.stamina += 0.5
             self.speed = PLAYERSPEED
 
         if key[pg.K_a]:
             self.rect = self.rect.move(-self.speed, 0)
         elif key[pg.K_d]:
             self.rect = self.rect.move(self.speed, 0)
+        if self.on_leader:
+            if key[pg.K_w]:
+                self.rect = self.rect.move(0, -self.speed)
+            elif key[pg.K_s] and not self.grounded:
+                self.rect = self.rect.move(0, self.speed)
 
         if key[pg.K_SPACE]:
             self.jump()
 
     def gravity_force(self):
+        if self.on_leader:
+            self.vgf = 10
+            return
         if self.vgf < 10:
             self.vgf += 1
 
-        self.rect = self.rect.move(0, self.vgf)
+        if not (self.grounded and not self.vgf < 10):
+            self.rect = self.rect.move(0, self.vgf)
 
     def jump(self):
         if self.grounded:
@@ -114,7 +130,7 @@ class Player(pg.sprite.Sprite):
 
     def collision(self, collision_map: MapLoader, surf):
         to_collide_rect = self.collider_rect.move((self.rect.x, self.rect.y - 10))
-        to_collide_rect.h += 20
+        to_collide_rect.h += 10
 
         collision, types = collision_map.collide_rect(to_collide_rect)
 
@@ -123,6 +139,10 @@ class Player(pg.sprite.Sprite):
             if FINISH_TILE in types:
                 self.finished = True
                 return
+
+            self.on_leader = False
+            if any((type in types for type in LEADER_TILES)):
+                self.on_leader = True
 
             # for colis_rect in collision:
             #     pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
@@ -138,9 +158,11 @@ class Player(pg.sprite.Sprite):
                                                     ground_collision))
 
                 if down_ground_collision:
+                    if not self.on_leader and not self.grounded:
+                        self.rect.y = min(map(lambda x: x.y, down_ground_collision)) - (
+                                self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h + 1
+
                     self.grounded = True
-                    self.rect.y = min(map(lambda x: x.y, down_ground_collision)) - (
-                            self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h - 9
 
                 center_ground_collision = list(
                     filter(lambda x: -self.collider_rect.h < x.y - self.collider_rect.bottom - self.rect.y < -10,
@@ -161,7 +183,7 @@ class Player(pg.sprite.Sprite):
 
                 if upper_ground_collision:
                     lowes_rect = max(upper_ground_collision, key=lambda x: x.bottom)
-                    self.rect.y = lowes_rect.bottom - (self.rect.h - self.collider_rect.h) / 2
+                    # self.rect.y = lowes_rect.bottom - (self.rect.h - self.collider_rect.h) / 2 + 1
                     self.vgf = 10
 
             bonus_collision = map(lambda x: collision[x[0]],
