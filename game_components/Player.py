@@ -108,25 +108,25 @@ class Player(pg.sprite.Sprite):
         if key[pg.K_a]:
             self.rect = self.rect.move(-self.speed, 0)
 
-            if self.up and self.flashlight_vcentr.y - flashlight_h / 2 > -5:
-                self.flashlight_vcentr.y -= self.speed / k
-            elif self.up and self.flashlight_vcentr.y - flashlight_h / 2 <= -5:
+            if self.up and self.flashlight_pos.y - self.collider_rect.centery > -5:
+                self.flashlight_pos.y -= self.speed / k
+            elif self.up and self.flashlight_pos.y - self.collider_rect.centery <= -5:
                 self.up = False
-            if not self.up and self.flashlight_vcentr.y - flashlight_h / 2 < 5:
-                self.flashlight_vcentr.y += self.speed / k
-            elif not self.up and self.flashlight_vcentr.y - flashlight_h / 2 >= 5:
+            if not self.up and self.flashlight_pos.y - self.collider_rect.centery < 5:
+                self.flashlight_pos.y += self.speed / k
+            elif not self.up and self.flashlight_pos.y - self.collider_rect.centery >= 5:
                 self.up = True
 
         elif key[pg.K_d]:
             self.rect = self.rect.move(self.speed, 0)
 
-            if self.up and self.flashlight_vcentr.y - flashlight_h / 2 > -5:
-                self.flashlight_vcentr.y -= self.speed / k
-            elif self.up and self.flashlight_vcentr.y - flashlight_h / 2 <= -5:
+            if self.up and self.flashlight_pos.y - self.collider_rect.centery > -5:
+                self.flashlight_pos.y -= self.speed / k
+            elif self.up and self.flashlight_pos.y - self.collider_rect.centery <= -5:
                 self.up = False
-            if not self.up and self.flashlight_vcentr.y - flashlight_h / 2 < 5:
-                self.flashlight_vcentr.y += self.speed / k
-            elif not self.up and self.flashlight_vcentr.y - flashlight_h / 2 >= 5:
+            if not self.up and self.flashlight_pos.y - self.collider_rect.centery < 5:
+                self.flashlight_pos.y += self.speed / k
+            elif not self.up and self.flashlight_pos.y - self.collider_rect.centery >= 5:
                 self.up = True
 
         if self.on_leader:
@@ -221,7 +221,7 @@ class Player(pg.sprite.Sprite):
 
     def update(self, collision_map: MapLoader, surf):
         mouse_pos = pg.Vector2(pg.mouse.get_pos())
-        rel_x, rel_y = mouse_pos - self.rect.center
+        rel_x, rel_y = mouse_pos - self.rect.center - (0, self.flashlight_pos.y - self.collider_rect.centery)
         angle = (- 180 / pi) * atan2(rel_y, rel_x)
         self.angle += angle
         self.rotate_light(angle)
