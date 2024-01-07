@@ -71,6 +71,8 @@ class Player(pg.sprite.Sprite):
 
         self.on_leader = False
 
+        self.up = True
+
     def rotate_light(self, angle):
         pos = self.flashlight_pos
         originPos = self.flashlight_vcentr
@@ -101,10 +103,32 @@ class Player(pg.sprite.Sprite):
                 self.ui.stamina_bar.stamina += 0.5
             self.speed = PLAYERSPEED
 
+        k = 10
+
         if key[pg.K_a]:
             self.rect = self.rect.move(-self.speed, 0)
+
+            if self.up and self.flashlight_vcentr.y - flashlight_h / 2 > -5:
+                self.flashlight_vcentr.y -= self.speed / k
+            elif self.up and self.flashlight_vcentr.y - flashlight_h / 2 <= -5:
+                self.up = False
+            if not self.up and self.flashlight_vcentr.y - flashlight_h / 2 < 5:
+                self.flashlight_vcentr.y += self.speed / k
+            elif not self.up and self.flashlight_vcentr.y - flashlight_h / 2 >= 5:
+                self.up = True
+
         elif key[pg.K_d]:
             self.rect = self.rect.move(self.speed, 0)
+
+            if self.up and self.flashlight_vcentr.y - flashlight_h / 2 > -5:
+                self.flashlight_vcentr.y -= self.speed / k
+            elif self.up and self.flashlight_vcentr.y - flashlight_h / 2 <= -5:
+                self.up = False
+            if not self.up and self.flashlight_vcentr.y - flashlight_h / 2 < 5:
+                self.flashlight_vcentr.y += self.speed / k
+            elif not self.up and self.flashlight_vcentr.y - flashlight_h / 2 >= 5:
+                self.up = True
+
         if self.on_leader:
             if key[pg.K_w]:
                 self.rect = self.rect.move(0, -self.speed)
@@ -125,7 +149,8 @@ class Player(pg.sprite.Sprite):
             self.rect = self.rect.move(0, self.vgf)
 
     def jump(self):
-        if self.grounded:
+        if self.grounded and self.ui.stamina_bar.stamina >= 10 and self.vgf == 10:
+            self.ui.stamina_bar.stamina -= 10
             self.vgf = -20
 
     def collision(self, collision_map: MapLoader, surf):
