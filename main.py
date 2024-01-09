@@ -4,6 +4,7 @@ import sys
 from game_components.Map import MapLoader, Camera, Dark
 from game_components.Player import Player, collider_w
 from game_components.UI import Button
+from game_components.Enemy import Enemy
 
 
 def terminate():
@@ -51,8 +52,11 @@ def level_screen():
 
         player.update(level_map, screen)
 
+        enemy.update(level_map, screen)
+
         camera.update(player.rect, size)
         camera.apply(player.rect)
+        camera.apply(enemy.rect)
         level_map.update_pos((camera.dx, camera.dy))
 
         level_map.set_visible_chunks(player.rect.center)
@@ -65,6 +69,7 @@ def level_screen():
         screen.fill((113, 112, 125))
 
         level_map.draw(screen)
+        enemy.draw(screen)
         blg.draw(screen)
         player.draw(screen)
 
@@ -81,6 +86,8 @@ def level_screen():
 def end_screen():
     exit_btn = Button(screen.get_width() / 2 - 125,
                       screen.get_height() * 0.9, 250, 50, (255, 0, 0), 'exit')
+    restart_btn = Button(screen.get_width() / 2 - 125,
+                         screen.get_height() * 0.8, 250, 50, (255, 0, 0), 'restart')
 
     font = pg.font.Font(None, int(screen.get_height() * 0.1))
     stats_text = font.render(f'Bonuses: {player.ui.bonus_counter.count}', True, (255, 255, 255), (100, 100, 100))
@@ -93,9 +100,15 @@ def end_screen():
                 terminate()
         if exit_btn.pressed:
             running = False
+            return True
+        if restart_btn.pressed:
+            running = False
+            return False
+
         clock.tick(60)
 
         exit_btn.update()
+        restart_btn.update()
 
         screen.fill((0, 0, 0))
 
@@ -103,6 +116,7 @@ def end_screen():
                                  screen.get_height() * 0.1))
 
         exit_btn.draw(screen)
+        restart_btn.draw(screen)
         pg.draw.circle(screen, (255, 255, 255), pg.mouse.get_pos(), 5, 2)
 
         pg.display.flip()
@@ -117,17 +131,25 @@ if __name__ == '__main__':
 
     clock = pg.time.Clock()
 
-    level_map = MapLoader('./data/map/level0.tmx', screen_w // collider_w - 2, 5, screen)
-
-    player = Player(screen,
-                    1 * level_map.tilesize + level_map.tilesize // 2,
-                    24 * level_map.tilesize + level_map.tilesize // 2)
-
-    camera = Camera()
-
     blg = pg.sprite.Group()
     dark = Dark(screen_w, screen_h, blg)
 
     start_screen()
-    level_screen()
-    end_screen()
+
+    while True:
+        level_map = MapLoader('./data/map/level0.tmx', screen_w // collider_w - 2, 5, screen)
+
+        player = Player(screen,
+                        1 * level_map.tilesize + level_map.tilesize // 2,
+                        0 * level_map.tilesize + level_map.tilesize // 2)
+
+        enemy = Enemy(screen,
+                      5 * level_map.tilesize + level_map.tilesize // 2,
+                      0 * level_map.tilesize + level_map.tilesize // 2)
+
+        camera = Camera()
+
+        level_screen()
+
+        if end_screen():
+            break
