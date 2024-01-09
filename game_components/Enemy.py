@@ -5,10 +5,12 @@ try:
     from Map import (MapLoader,
                      GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE)
     from UI import UI, MAXSTAMINA
+    from Player import Player
 except ImportError:
     from game_components.Map import (MapLoader,
                                      GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE)
     from game_components.UI import UI, MAXSTAMINA
+    from game_components.Player import Player
 
 ENEMYSPEED = 5
 
@@ -51,7 +53,7 @@ class Enemy(pg.sprite.Sprite):
         if not (self.grounded and not self.vgf < 10):
             self.rect = self.rect.move(0, self.vgf)
 
-    def collision(self, collision_map: MapLoader, surf):
+    def collision(self, collision_map: MapLoader, player: Player, surf):
         to_collide_rect = self.collider_rect.move((self.rect.x, self.rect.y - 10))
         to_collide_rect.h += 10
 
@@ -59,14 +61,6 @@ class Enemy(pg.sprite.Sprite):
 
         self.grounded = False
         if collision:
-            if FINISH_TILE in types:
-                self.finished = True
-                return
-
-            self.on_leader = False
-            if any((type in types for type in LEADER_TILES)):
-                self.on_leader = True
-
             # for colis_rect in collision:
             #     pg.draw.rect(surf, (255, 0, 0), colis_rect, 2)
 
@@ -81,7 +75,7 @@ class Enemy(pg.sprite.Sprite):
                                                     ground_collision))
 
                 if down_ground_collision:
-                    if not self.on_leader and not self.grounded:
+                    if not self.grounded:
                         self.rect.y = min(map(lambda x: x.y, down_ground_collision)) - (
                                 self.rect.h - self.collider_rect.h) / 2 - self.collider_rect.h + 1
 
@@ -98,7 +92,7 @@ class Enemy(pg.sprite.Sprite):
                         self.rect.x = center_ground_collision[0].left - self.collider_rect.right
                     else:
                         self.rect.x = center_ground_collision[0].right - self.collider_rect.left
-                #
+
                 # upper_ground_collision = tuple(
                 #     filter(lambda x: -self.collider_rect.h >= x.y - self.collider_rect.bottom - self.rect.y and
                 #                      abs(x.centerx - self.collider_rect.centerx - self.rect.x) <= self.collider_rect.w,
@@ -109,10 +103,15 @@ class Enemy(pg.sprite.Sprite):
                 #     # self.rect.y = lowes_rect.bottom - (self.rect.h - self.collider_rect.h) / 2 + 1
                 #     self.vgf = 10
 
+        player_collision = to_collide_rect.colliderect(player.collider_rect.move(player.rect.topleft))
+
+        if player_collision:
+            player.ui.hp_bar.hp -= 10
+
         self.gravity_force()
 
-    def update(self, collision_map: MapLoader, surf):
-        self.collision(collision_map, surf)
+    def update(self, collision_map: MapLoader, surf, player: Player):
+        self.collision(collision_map, player, surf)
 
     def draw(self, surface: pg.Surface):
         surface.blit(self.image, self.rect)

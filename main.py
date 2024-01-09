@@ -46,13 +46,13 @@ def level_screen():
                 terminate()
         clock.tick(60)
 
-        if player.finished:
+        if player.finished or player.ui.hp_bar.hp < 0:
             running = False
             break
 
         player.update(level_map, screen)
 
-        enemy.update(level_map, screen)
+        enemy.update(level_map, screen, player)
 
         camera.update(player.rect, size)
         camera.apply(player.rect)
@@ -122,6 +122,48 @@ def end_screen():
         pg.display.flip()
 
 
+def dead_screen():
+    exit_btn = Button(screen.get_width() / 2 - 125,
+                      screen.get_height() * 0.9, 250, 50, (255, 0, 0), 'exit')
+    restart_btn = Button(screen.get_width() / 2 - 125,
+                         screen.get_height() * 0.8, 250, 50, (255, 0, 0), 'restart')
+
+    font = pg.font.Font(None, int(screen.get_height() * 0.1))
+    stats_text = font.render(f'Bonuses: {player.ui.bonus_counter.count}', True, (255, 255, 255), (100, 100, 100))
+    dead_text = font.render('You Dead', True, (255, 0, 0), (100, 0, 0))
+
+    running = True
+    while running:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                running = False
+                terminate()
+        if exit_btn.pressed:
+            running = False
+            return True
+        if restart_btn.pressed:
+            running = False
+            return False
+
+        clock.tick(60)
+
+        exit_btn.update()
+        restart_btn.update()
+
+        screen.fill((0, 0, 0))
+
+        screen.blit(stats_text, (screen.get_width() / 3 - stats_text.get_width() / 2,
+                                 screen.get_height() * 0.1))
+        screen.blit(dead_text, (screen_w / 2 - dead_text.get_width() / 2,
+                                screen_h * 0.01))
+
+        exit_btn.draw(screen)
+        restart_btn.draw(screen)
+        pg.draw.circle(screen, (255, 255, 255), pg.mouse.get_pos(), 5, 2)
+
+        pg.display.flip()
+
+
 if __name__ == '__main__':
     pg.init()
 
@@ -150,6 +192,7 @@ if __name__ == '__main__':
         camera = Camera()
 
         level_screen()
-
+        if player.ui.hp_bar.hp < 0 and dead_screen():
+            break
         if end_screen():
             break

@@ -11,6 +11,7 @@ class UI(pg.sprite.Group):
 
         self.bonus_counter = BonusCounter(surface.get_size(), self)
         self.stamina_bar = StaminaBar(surface.get_size(), self)
+        self.hp_bar = HpBar(surface.get_size(), self)
 
         self.surface = surface
 
@@ -69,8 +70,26 @@ class StaminaBar(pg.sprite.Sprite):
 
     def update(self, *args, **kwargs):
         self.image.fill((0, 0, 0, 0))
-        self.image.fill((255, 153, 0, 200), ((0, self.image.get_height() - self.image.get_height() / 100 * self.stamina),
-                                             self.image.get_size()))
+        self.image.fill((255, 153, 0, 200),
+                        ((0, self.image.get_height() - self.image.get_height() / 100 * self.stamina),
+                         self.image.get_size()))
+
+
+class HpBar(pg.sprite.Sprite):
+    def __init__(self, surf_size, group):
+        super().__init__(group)
+
+        self.hp = MAXSTAMINA
+
+        w, h = surf_size[0] * 0.4, surf_size[1] * 0.03
+        self.image = pg.Surface((w, h), pg.SRCALPHA)
+        self.rect = self.image.get_rect().move(surf_size[0] - w, 0)
+
+    def update(self, *args, **kwargs):
+        self.image.fill((0, 0, 0, 0))
+        self.image.fill((255, 153, 0, 200),
+                        ((0, 0),
+                         (self.image.get_width() / 100 * self.hp, self.image.get_height())))
 
 
 class Button(pg.sprite.Sprite):
