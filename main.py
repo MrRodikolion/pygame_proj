@@ -52,11 +52,8 @@ def level_screen():
 
         player.update(level_map, screen)
 
-        enemy.update(level_map, screen, player)
-
         camera.update(player.rect, size)
         camera.apply(player.rect)
-        camera.apply(enemy.rect)
         level_map.update_pos((camera.dx, camera.dy))
 
         level_map.set_visible_chunks(player.rect.center)
@@ -69,7 +66,6 @@ def level_screen():
         screen.fill((113, 112, 125))
 
         level_map.draw(screen)
-        enemy.draw(screen)
         blg.draw(screen)
         player.draw(screen)
 
@@ -182,8 +178,8 @@ if __name__ == '__main__':
         level_map = MapLoader('./data/map/level0.tmx', screen_w // collider_w - 2, 5, screen)
 
         player = Player(screen,
-                        1 * level_map.tilesize + level_map.tilesize // 2,
-                        0 * level_map.tilesize + level_map.tilesize // 2)
+                        4 * level_map.tilesize + level_map.tilesize // 2,
+                        6 * level_map.tilesize + level_map.tilesize // 2)
 
         enemy = Enemy(screen,
                       5 * level_map.tilesize + level_map.tilesize // 2,
