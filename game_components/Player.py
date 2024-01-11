@@ -29,7 +29,7 @@ def load_anim_sprites(filename):
             sheet = img.subsurface((sheet_size[0] * x, sheet_size[1] * y), sheet_size)
             walk_anim_sprites.append(pg.transform.scale(sheet, (collider_w, collider_h)))
 
-    stand_sprite = img.subsurface((sheet_size[0] * 8, sheet_size[1] * 5), sheet_size)
+    stand_sprite = img.subsurface((sheet_size[0] * 1, sheet_size[1] * 3), sheet_size)
     stand_sprite = pg.transform.scale(stand_sprite, (collider_w, collider_h))
 
     return walk_anim_sprites, stand_sprite
