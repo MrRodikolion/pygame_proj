@@ -19,9 +19,26 @@ collider_w = 40
 collider_h = 2 * collider_w
 
 
+def load_anim_sprites(filename):
+    img = pg.image.load(filename)
+    sheet_size = (16, 32)
+
+    walk_anim_sprites = []
+    for y in range(1):
+        for x in range(8):
+            sheet = img.subsurface((sheet_size[0] * x, sheet_size[1] * y), sheet_size)
+            walk_anim_sprites.append(pg.transform.scale(sheet, (collider_w, collider_h)))
+
+    stand_sprite = img.subsurface((sheet_size[0] * 8, sheet_size[1] * 5), sheet_size)
+    stand_sprite = pg.transform.scale(stand_sprite, (collider_w, collider_h))
+
+    return walk_anim_sprites, stand_sprite
+
+
 class Player(pg.sprite.Sprite):
     def __init__(self, surface, x, y):
         super().__init__()
+        self.walk_anim, self.stand_sprite = load_anim_sprites('./data/player/player.png')
 
         self.flashlight_points = (
             pg.math.Vector2(0, -15),
@@ -58,7 +75,11 @@ class Player(pg.sprite.Sprite):
         # pg.draw.rect(self.image, (0, 255, 0), self.image.get_rect(), 1)
         pg.draw.rect(self.image, (255, 0, 0), self.collider_rect, 1)
 
+        self.image.blit(self.stand_sprite, self.collider_rect.topleft)
+
         self.angle = 0
+
+        self.dir = True
 
         self.speed = PLAYERSPEED
         self.vgf = 10
@@ -72,6 +93,9 @@ class Player(pg.sprite.Sprite):
         self.on_leader = False
 
         self.up = True
+
+        self.walking = False
+        self.walk_sprite = 0
 
     def rotate_light(self, angle):
         pos = self.flashlight_pos
@@ -104,9 +128,11 @@ class Player(pg.sprite.Sprite):
             self.speed = PLAYERSPEED
 
         k = 10
-
+        self.walking = False
         if key[pg.K_a]:
             self.rect = self.rect.move(-self.speed, 0)
+            self.dir = False
+            self.walking = True
 
             if self.up and self.flashlight_pos.y - self.collider_rect.centery > -5:
                 self.flashlight_pos.y -= self.speed / k
@@ -119,6 +145,8 @@ class Player(pg.sprite.Sprite):
 
         elif key[pg.K_d]:
             self.rect = self.rect.move(self.speed, 0)
+            self.dir = True
+            self.walking = True
 
             if self.up and self.flashlight_pos.y - self.collider_rect.centery > -5:
                 self.flashlight_pos.y -= self.speed / k
@@ -219,6 +247,26 @@ class Player(pg.sprite.Sprite):
 
         self.gravity_force()
 
+    def redraw(self):
+        self.image.fill((0, 0, 0, 0))
+
+        if self.walking:
+            if self.dir:
+                img = pg.transform.flip(self.walk_anim[self.walk_sprite], True, False)
+            else:
+                img = self.walk_anim[self.walk_sprite]
+
+            self.image.blit(img, self.collider_rect.topleft)
+
+            self.walk_sprite = self.walk_sprite + 1 if self.walk_sprite + 1 < len(self.walk_anim) else 0
+        else:
+            if self.dir:
+                img = pg.transform.flip(self.stand_sprite, True, False)
+            else:
+                img = self.stand_sprite
+
+            self.image.blit(img, self.collider_rect.topleft)
+
     def update(self, collision_map: MapLoader, surf):
         mouse_pos = pg.Vector2(pg.mouse.get_pos())
         rel_x, rel_y = mouse_pos - self.rect.center - (0, self.flashlight_pos.y - self.collider_rect.centery)
@@ -232,7 +280,8 @@ class Player(pg.sprite.Sprite):
 
         self.ui.update()
 
+        self.redraw()
+
     def draw(self, surface: pg.Surface):
         surface.blit(self.image, self.rect)
         self.ui.draw()
-

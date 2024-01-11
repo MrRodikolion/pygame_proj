@@ -4,3 +4,6 @@ trymore.py
 tyrymore+.py
 
 .idea
+
+*.tiled-project
+*.tiled-session
