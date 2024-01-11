@@ -32,13 +32,16 @@ def load_anim_sprites(filename):
     stand_sprite = img.subsurface((sheet_size[0] * 1, sheet_size[1] * 3), sheet_size)
     stand_sprite = pg.transform.scale(stand_sprite, (collider_w, collider_h))
 
-    return walk_anim_sprites, stand_sprite
+    jump_sprite = img.subsurface((sheet_size[0] * 2, sheet_size[1] * 1), sheet_size)
+    jump_sprite = pg.transform.scale(jump_sprite, (collider_w, collider_h))
+
+    return walk_anim_sprites, stand_sprite, jump_sprite
 
 
 class Player(pg.sprite.Sprite):
     def __init__(self, surface, x, y):
         super().__init__()
-        self.walk_anim, self.stand_sprite = load_anim_sprites('./data/player/player.png')
+        self.walk_anim, self.stand_sprite, self.jump_sprite = load_anim_sprites('./data/player/player.png')
 
         self.flashlight_points = (
             pg.math.Vector2(0, -15),
@@ -250,7 +253,7 @@ class Player(pg.sprite.Sprite):
     def redraw(self):
         self.image.fill((0, 0, 0, 0))
 
-        if self.walking:
+        if self.walking and self.grounded:
             if self.dir:
                 img = pg.transform.flip(self.walk_anim[self.walk_sprite], True, False)
             else:
@@ -259,6 +262,14 @@ class Player(pg.sprite.Sprite):
             self.image.blit(img, self.collider_rect.topleft)
 
             self.walk_sprite = self.walk_sprite + 1 if self.walk_sprite + 1 < len(self.walk_anim) else 0
+        elif not self.grounded:
+            print(self.grounded)
+            if self.dir:
+                img = pg.transform.flip(self.jump_sprite, True, False)
+            else:
+                img = self.jump_sprite
+
+            self.image.blit(img, self.collider_rect.topleft)
         else:
             if self.dir:
                 img = pg.transform.flip(self.stand_sprite, True, False)
