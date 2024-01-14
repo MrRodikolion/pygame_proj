@@ -11,6 +11,8 @@ FINISH_TILE = 8
 
 LAMP_TILE = 52
 
+DANGER_TILES = (7,)
+
 
 class Camera:
     def __init__(self):

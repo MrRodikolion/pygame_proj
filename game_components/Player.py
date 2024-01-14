@@ -3,11 +3,11 @@ from math import pi, atan2
 
 try:
     from Map import (MapLoader,
-                     GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE)
+                     GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE, DANGER_TILES)
     from UI import UI, MAXSTAMINA
 except ImportError:
     from game_components.Map import (MapLoader,
-                                     GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE)
+                                     GROUND_TILES, BOX_TILES, BONUS1_TILE, LEADER_TILES, FINISH_TILE, DANGER_TILES)
     from game_components.UI import UI, MAXSTAMINA
 
 PLAYERSPEED = 5
@@ -195,6 +195,9 @@ class Player(pg.sprite.Sprite):
             if FINISH_TILE in types:
                 self.finished = True
                 return
+
+            if any((tile in types for tile in DANGER_TILES)):
+                self.ui.hp_bar.hp -= 10
 
             self.on_leader = False
             if any((type in types for type in LEADER_TILES)):

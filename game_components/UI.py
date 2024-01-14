@@ -88,8 +88,8 @@ class HpBar(pg.sprite.Sprite):
     def update(self, *args, **kwargs):
         self.image.fill((0, 0, 0, 0))
         self.image.fill((255, 153, 0, 200),
-                        ((0, 0),
-                         (self.image.get_width() / 100 * self.hp, self.image.get_height())))
+                        ((self.image.get_width() - self.image.get_width() / 100 * self.hp, 0),
+                         self.image.get_size()))
 
 
 class Button(pg.sprite.Sprite):
