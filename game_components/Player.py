@@ -1,5 +1,5 @@
 import pygame as pg
-from math import pi, atan2
+from math import pi, atan2, radians, degrees, cos, sin
 
 try:
     from Map import (MapLoader,
@@ -43,20 +43,22 @@ class Player(pg.sprite.Sprite):
         super().__init__()
         self.walk_anim, self.stand_sprite, self.jump_sprite = load_anim_sprites('./data/player/player.png')
 
-        self.flashlight_points = (
-            pg.math.Vector2(0, -15),
-            *(pg.Vector2(flashlight_w, 0).rotate(-flashlight_angle / 2).rotate(a) for a in range(flashlight_angle)),
-            pg.math.Vector2(0, 15))
-        self.s_flashlight_image = pg.Surface((flashlight_w * 2, flashlight_h * 2)).convert_alpha()
-        self.s_flashlight_image.fill((255, 255, 255, 0))
+        self.flashlight_maxdist = 400
+        self.rays = 50
 
-        self.flashlight_vcentr = pg.Vector2(10, flashlight_h / 2)
-        pg.draw.polygon(self.s_flashlight_image, (0, 0, 0),
-                        [self.flashlight_vcentr + fp for fp in self.flashlight_points])
+        # self.flashlight_points = (
+        #     pg.math.Vector2(0, -15),
+        #     *(pg.Vector2(flashlight_w, 0).rotate(-flashlight_angle / 2).rotate(a) for a in range(flashlight_angle)),
+        #     pg.math.Vector2(0, 15))
+        # self.s_flashlight_image = pg.Surface((flashlight_w * 2, flashlight_h * 2)).convert_alpha()
+        # self.s_flashlight_image.fill((255, 255, 255, 0))
 
-        self.glob_image_size = (
-            self.flashlight_vcentr.distance_to(self.flashlight_points[1] + self.flashlight_vcentr) * 2,
-            self.flashlight_vcentr.distance_to(self.flashlight_points[2] + self.flashlight_vcentr) * 2)
+        # self.flashlight_vcentr = pg.Vector2(10, flashlight_h / 2)
+        # pg.draw.polygon(self.s_flashlight_image, (0, 0, 0),
+        #                 [self.flashlight_vcentr + fp for fp in self.flashlight_points])
+
+        self.glob_image_size = ((self.flashlight_maxdist + 10) * 2,
+                                (self.flashlight_maxdist + 10) * 2)
         self.light_image = pg.Surface(self.glob_image_size, pg.SRCALPHA)
 
         self.image = pg.Surface(self.glob_image_size, pg.SRCALPHA)
@@ -71,12 +73,12 @@ class Player(pg.sprite.Sprite):
                                      collider_w, collider_h)
 
         self.flashlight_pos = pg.Vector2(self.collider_rect.center)
-        self.light_image.blit(self.s_flashlight_image, self.flashlight_pos - self.flashlight_vcentr)
+
         pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(light_area_kw, light_area_kh))
 
         # debug lines
         # pg.draw.rect(self.image, (0, 255, 0), self.image.get_rect(), 1)
-        pg.draw.rect(self.image, (255, 0, 0), self.collider_rect, 1)
+        # pg.draw.rect(self.image, (255, 0, 0), self.collider_rect, 1)
 
         self.image.blit(self.stand_sprite, self.collider_rect.topleft)
 
@@ -100,22 +102,39 @@ class Player(pg.sprite.Sprite):
         self.walking = False
         self.walk_sprite = 0
 
-    def rotate_light(self, angle):
-        pos = self.flashlight_pos
-        originPos = self.flashlight_vcentr
-        image_rect = self.s_flashlight_image.get_rect(topleft=(pos[0] - originPos[0], pos[1] - originPos[1]))
-        offset_center_to_pivot = pg.math.Vector2(pos.xy) - image_rect.center
-
-        rotated_offset = offset_center_to_pivot.rotate(-angle)
-
-        rotated_image_center = (pos[0] - rotated_offset.x, pos[1] - rotated_offset.y)
-
-        rotated_image = pg.transform.rotate(self.s_flashlight_image, angle)
-        rotated_image_rect = rotated_image.get_rect(center=rotated_image_center)
-
+    def raycast_flashlight(self, level_map: MapLoader):
         self.light_image = pg.Surface(self.glob_image_size, pg.SRCALPHA)
         pg.draw.ellipse(self.light_image, (0, 0, 0), self.collider_rect.scale_by(light_area_kw, light_area_kh))
-        self.light_image.blit(rotated_image, rotated_image_rect)
+
+        angle0 = self.angle
+        pts = [self.collider_rect.center]
+        ang_step = 70 / self.rays
+        for ray in range(self.rays):
+            ftarget_x = - sin(radians(angle0)) * (self.flashlight_maxdist + 10) - level_map.pos.x + self.rect.centerx
+            ftarget_y = + cos(radians(angle0)) * (self.flashlight_maxdist + 10) - level_map.pos.y + self.rect.centery
+            for d in range(self.flashlight_maxdist):
+                target_x = - sin(radians(angle0)) * d - level_map.pos.x + self.rect.centerx
+                target_y = + cos(radians(angle0)) * d - level_map.pos.y + self.rect.centery
+
+                x = int(target_x / level_map.tilesize)
+                y = int(target_y / level_map.tilesize)
+
+                try:
+                    type = level_map.map.tiledgidmap[level_map.map.get_tile_gid(x, y, 0)]
+                except:
+                    continue
+
+                if type in GROUND_TILES:
+                    ftarget_x = - sin(radians(angle0)) * (d + 10) - level_map.pos.x + self.rect.centerx
+                    ftarget_y = + cos(radians(angle0)) * (d + 10) - level_map.pos.y + self.rect.centery
+                    break
+
+            pts.append((ftarget_x + level_map.pos.x - self.rect.x, ftarget_y + level_map.pos.y - self.rect.y))
+
+            angle0 += ang_step
+
+        pg.draw.polygon(self.light_image, (0, 0, 0), pts)
+
         self.mask = pg.mask.from_surface(self.light_image)
 
     def handle_keys(self):
@@ -266,7 +285,6 @@ class Player(pg.sprite.Sprite):
 
             self.walk_sprite = self.walk_sprite + 1 if self.walk_sprite + 1 < len(self.walk_anim) else 0
         elif not self.grounded:
-            print(self.grounded)
             if self.dir:
                 img = pg.transform.flip(self.jump_sprite, True, False)
             else:
@@ -284,9 +302,10 @@ class Player(pg.sprite.Sprite):
     def update(self, collision_map: MapLoader, surf):
         mouse_pos = pg.Vector2(pg.mouse.get_pos())
         rel_x, rel_y = mouse_pos - self.rect.center - (0, self.flashlight_pos.y - self.collider_rect.centery)
-        angle = (- 180 / pi) * atan2(rel_y, rel_x)
-        self.angle += angle
-        self.rotate_light(angle)
+        angle = (180 / pi) * atan2(rel_y, rel_x) - 90 - 35
+        self.angle = angle
+        # self.rotate_light(angle)
+        self.raycast_flashlight(collision_map)
 
         self.handle_keys()
 

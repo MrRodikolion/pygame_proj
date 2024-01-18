@@ -181,9 +181,9 @@ if __name__ == '__main__':
                         4 * level_map.tilesize + level_map.tilesize // 2,
                         6 * level_map.tilesize + level_map.tilesize // 2)
 
-        enemy = Enemy(screen,
-                      5 * level_map.tilesize + level_map.tilesize // 2,
-                      0 * level_map.tilesize + level_map.tilesize // 2)
+        # enemy = Enemy(screen,
+        #               5 * level_map.tilesize + level_map.tilesize // 2,
+        #               0 * level_map.tilesize + level_map.tilesize // 2)
 
         camera = Camera()
 
