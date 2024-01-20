@@ -305,7 +305,6 @@ class Player(pg.sprite.Sprite):
         angle = (180 / pi) * atan2(rel_y, rel_x) - 90 - 35
         self.angle = angle
         # self.rotate_light(angle)
-        self.raycast_flashlight(collision_map)
 
         self.handle_keys()
 
@@ -314,6 +313,7 @@ class Player(pg.sprite.Sprite):
         self.ui.update()
 
         self.redraw()
+        self.raycast_flashlight(collision_map)
 
     def draw(self, surface: pg.Surface):
         surface.blit(self.image, self.rect)
