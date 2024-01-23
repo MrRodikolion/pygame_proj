@@ -4,7 +4,6 @@ import sys
 from game_components.Map import MapLoader, Camera, Dark
 from game_components.Player import Player, collider_w
 from game_components.UI import Button
-from game_components.Enemy import Enemy
 
 
 def terminate():
@@ -20,9 +19,13 @@ def start_screen():
     running = True
     while running:
         for event in pg.event.get():
-            if event.type == pg.QUIT:
+            if event.type == pg.QUIT or pg.key.get_pressed()[pg.K_ESCAPE]:
                 running = False
                 terminate()
+            if event.type == pg.KEYDOWN:
+                key = pg.key.get_pressed()
+                if key[pg.K_f]:
+                    pg.display.toggle_fullscreen()
         if sart_btn.pressed:
             running = False
         clock.tick(60)
@@ -41,9 +44,13 @@ def level_screen():
     running = True
     while running:
         for event in pg.event.get():
-            if event.type == pg.QUIT:
+            if event.type == pg.QUIT or pg.key.get_pressed()[pg.K_ESCAPE]:
                 running = False
                 terminate()
+            if event.type == pg.KEYDOWN:
+                key = pg.key.get_pressed()
+                if key[pg.K_f]:
+                    pg.display.toggle_fullscreen()
         clock.tick(60)
 
         if player.finished or player.ui.hp_bar.hp < 0:
@@ -69,11 +76,6 @@ def level_screen():
         blg.draw(screen)
         player.draw(screen)
 
-        # for row in level_map.chunks:
-        #     for chunk in row:
-        #         for rct in chunk.rects:
-        #             pg.draw.rect(screen, (0, 255, 0), rct, 1)
-
         pg.draw.circle(screen, (255, 255, 255), pg.mouse.get_pos(), 5, 2)
 
         pg.display.flip()
@@ -91,9 +93,13 @@ def end_screen():
     running = True
     while running:
         for event in pg.event.get():
-            if event.type == pg.QUIT:
+            if event.type == pg.QUIT or pg.key.get_pressed()[pg.K_ESCAPE]:
                 running = False
                 terminate()
+            if event.type == pg.KEYDOWN:
+                key = pg.key.get_pressed()
+                if key[pg.K_f]:
+                    pg.display.toggle_fullscreen()
         if exit_btn.pressed:
             running = False
             return True
@@ -131,9 +137,13 @@ def dead_screen():
     running = True
     while running:
         for event in pg.event.get():
-            if event.type == pg.QUIT:
+            if event.type == pg.QUIT or pg.key.get_pressed()[pg.K_ESCAPE]:
                 running = False
                 terminate()
+            if event.type == pg.KEYDOWN:
+                key = pg.key.get_pressed()
+                if key[pg.K_f]:
+                    pg.display.toggle_fullscreen()
         if exit_btn.pressed:
             running = False
             return True
@@ -180,10 +190,6 @@ if __name__ == '__main__':
         player = Player(screen,
                         4 * level_map.tilesize + level_map.tilesize // 2,
                         4 * level_map.tilesize + level_map.tilesize // 2)
-
-        # enemy = Enemy(screen,
-        #               5 * level_map.tilesize + level_map.tilesize // 2,
-        #               0 * level_map.tilesize + level_map.tilesize // 2)
 
         camera = Camera()
 

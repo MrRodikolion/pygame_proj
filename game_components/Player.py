@@ -44,7 +44,7 @@ class Player(pg.sprite.Sprite):
         self.walk_anim, self.stand_sprite, self.jump_sprite = load_anim_sprites('./data/player/player.png')
 
         self.flashlight_maxdist = 400
-        self.count_rays = 50
+        self.count_rays = 35
 
         self.glob_image_size = ((self.flashlight_maxdist + 10) * 2,
                                 (self.flashlight_maxdist + 10) * 2)
