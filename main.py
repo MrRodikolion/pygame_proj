@@ -175,11 +175,11 @@ if __name__ == '__main__':
     start_screen()
 
     while True:
-        level_map = MapLoader('./data/map/level0.tmx', screen_w // collider_w - 2, 5, screen)
+        level_map = MapLoader('./data/map/level1.tmx', screen_w // collider_w - 2, 5, screen)
 
         player = Player(screen,
                         4 * level_map.tilesize + level_map.tilesize // 2,
-                        6 * level_map.tilesize + level_map.tilesize // 2)
+                        4 * level_map.tilesize + level_map.tilesize // 2)
 
         # enemy = Enemy(screen,
         #               5 * level_map.tilesize + level_map.tilesize // 2,

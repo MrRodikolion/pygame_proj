@@ -44,18 +44,7 @@ class Player(pg.sprite.Sprite):
         self.walk_anim, self.stand_sprite, self.jump_sprite = load_anim_sprites('./data/player/player.png')
 
         self.flashlight_maxdist = 400
-        self.rays = 50
-
-        # self.flashlight_points = (
-        #     pg.math.Vector2(0, -15),
-        #     *(pg.Vector2(flashlight_w, 0).rotate(-flashlight_angle / 2).rotate(a) for a in range(flashlight_angle)),
-        #     pg.math.Vector2(0, 15))
-        # self.s_flashlight_image = pg.Surface((flashlight_w * 2, flashlight_h * 2)).convert_alpha()
-        # self.s_flashlight_image.fill((255, 255, 255, 0))
-
-        # self.flashlight_vcentr = pg.Vector2(10, flashlight_h / 2)
-        # pg.draw.polygon(self.s_flashlight_image, (0, 0, 0),
-        #                 [self.flashlight_vcentr + fp for fp in self.flashlight_points])
+        self.count_rays = 50
 
         self.glob_image_size = ((self.flashlight_maxdist + 10) * 2,
                                 (self.flashlight_maxdist + 10) * 2)
@@ -108,11 +97,11 @@ class Player(pg.sprite.Sprite):
 
         angle0 = self.angle
         pts = [self.collider_rect.center]
-        ang_step = 70 / self.rays
-        for ray in range(self.rays):
+        ang_step = 70 / self.count_rays
+        for ray in range(self.count_rays):
             ftarget_x = - sin(radians(angle0)) * (self.flashlight_maxdist + 10) - level_map.pos.x + self.rect.centerx
             ftarget_y = + cos(radians(angle0)) * (self.flashlight_maxdist + 10) - level_map.pos.y + self.rect.centery
-            for d in range(self.flashlight_maxdist):
+            for d in range(1, self.flashlight_maxdist, 2):
                 target_x = - sin(radians(angle0)) * d - level_map.pos.x + self.rect.centerx
                 target_y = + cos(radians(angle0)) * d - level_map.pos.y + self.rect.centery
 
@@ -149,7 +138,7 @@ class Player(pg.sprite.Sprite):
                 self.ui.stamina_bar.stamina += 0.5
             self.speed = PLAYERSPEED
 
-        k = 10
+        k = 2
         self.walking = False
         if key[pg.K_a]:
             self.rect = self.rect.move(-self.speed, 0)

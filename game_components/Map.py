@@ -1,7 +1,7 @@
 import pygame as pg
 import pytmx
 
-GROUND_TILES = (3, 14, 25)
+GROUND_TILES = (3, 14, 25, 26)
 LEADER_TILES = (2, 13, 24)
 BOX_TILES = (17, 27, 28)
 
