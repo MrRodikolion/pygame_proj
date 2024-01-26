@@ -1,5 +1,7 @@
 import pygame as pg
 import sys
+import sqlite3 as sql
+from time import time
 
 from game_components.Map import MapLoader, Camera, Dark
 from game_components.Player import Player, collider_w
@@ -15,6 +17,19 @@ def start_screen():
     sart_btn = Button(screen.get_width() / 2 - 125,
                       screen.get_height() * 0.1,
                       250, 50, (255, 255, 255), 'start')
+
+    data = cur.execute('''SELECT * FROM stats''').fetchall()
+    is_stats = len(data) > 0
+
+    if is_stats:
+        last = data[:5]
+        best = max(data, key=lambda x: (x[1], x[2]))
+
+        font = pg.font.Font(None, int(screen.get_height() * 0.1))
+        gettext = lambda text: font.render(text, True, (255, 255, 255))
+
+        stats_texts = [[gettext(str(t[0])), gettext(str(t[1])), gettext(f'{t[2] // 60}:{t[2] % 60}')] for t in last]
+        best_texts = [gettext(str(best[0])), gettext(str(best[1])), gettext(f'{best[2] // 60}:{best[2] % 60}')]
 
     running = True
     while running:
@@ -34,6 +49,37 @@ def start_screen():
 
         screen.fill((0, 0, 0))
 
+        if is_stats:
+            stat_w = max(sum(t.get_width() * 3 for t in stat) for stat in stats_texts)
+
+            for i, stat in enumerate(stats_texts):
+                tx = 0
+                for j, t in enumerate(stat):
+                    t_w = t.get_width()
+                    tx += t_w
+
+                    screen.blit(t, (screen_w / 2 - stat_w / 2 + tx, sart_btn.rect.bottom + 125 + t.get_height() * i))
+
+                    tx += t_w * 2
+
+            pg.draw.rect(screen, (255, 255, 255),
+                         (screen_w / 2 - stat_w / 2, sart_btn.rect.bottom + 125,
+                          stat_w, screen_h), 2)
+
+            tx = 0
+            for j, t in enumerate(best_texts):
+                t_w = t.get_width()
+                tx += t_w
+
+                screen.blit(t, (screen_w / 2 - stat_w / 2 + tx,
+                                sart_btn.rect.bottom + 125 - best_texts[0].get_height()))
+
+                tx += t_w * 2
+
+            pg.draw.rect(screen, (255, 170, 0),
+                         (screen_w / 2 - stat_w / 2, sart_btn.rect.bottom + 125 - best_texts[0].get_height(),
+                          stat_w, best_texts[0].get_height()), 4)
+
         sart_btn.draw(screen)
         pg.draw.circle(screen, (255, 255, 255), pg.mouse.get_pos(), 5, 2)
 
@@ -41,6 +87,8 @@ def start_screen():
 
 
 def level_screen():
+    start_t = time()
+
     running = True
     while running:
         for event in pg.event.get():
@@ -54,6 +102,10 @@ def level_screen():
         clock.tick(60)
 
         if player.finished or player.ui.hp_bar.hp < 0:
+            cur.execute('''INSERT INTO stats (bonuses, timesecs)
+                        VALUES({}, {})'''.format(player.ui.bonus_counter.count, int(time() - start_t)))
+            con.commit()
+
             running = False
             break
 
@@ -173,6 +225,13 @@ def dead_screen():
 if __name__ == '__main__':
     pg.init()
 
+    con = sql.Connection('./stats.db')
+    cur = con.cursor()
+    cur.execute('''CREATE TABLE IF NOT EXISTS stats (
+                    id INTEGER PRIMARY KEY,
+                    bonuses INTEGER,
+                    timesecs INTEGER)''')
+
     size = screen_w, screen_h = 16 * 80, 9 * 80
     screen = pg.display.set_mode(size)
     pg.mouse.set_visible(False)
@@ -198,3 +257,5 @@ if __name__ == '__main__':
             break
         if end_screen():
             break
+
+    con.close()
