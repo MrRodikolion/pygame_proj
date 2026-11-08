@@ -7,3 +7,9 @@ tyrymore+.py
 
 *.tiled-project
 *.tiled-session
+
+__pycache__/
+*.py[cod]
+.venv/
+stats.db
+stats.db-journal

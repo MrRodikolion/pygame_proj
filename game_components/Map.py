@@ -54,16 +54,6 @@ class MapLoader:
 
                 self.chunks[-1].append(chunk)
 
-    def set_visible_chunks(self, player_pos):
-        player_pos -= self.pos
-
-        tilex, tiley = (int(player_pos[0] // (self.map.tilewidth * self.tilesize)),
-                        int(player_pos[1] // (self.map.tilewidth * self.tilesize)))
-
-        chunkx, chunky = tilex // self.chunk_size, tiley // self.chunk_size
-
-        self.chunks[chunky][chunkx].visible = True
-
     def collide_rect(self, rect: pg.Rect):
         collisions = []
         collider_types = []
@@ -72,9 +62,10 @@ class MapLoader:
                 colis = rect.collidelistall(chunk.rects)
                 collisions += [chunk.rects[c] for c in colis]
                 collider_types += [self.map.tiledgidmap[
-                                       self.map.get_tile_gid(chunk.localpos[0] * self.chunk_size + c % self.chunk_size,
-                                                             chunk.localpos[1] * self.chunk_size + c // self.chunk_size,
-                                                             0)] for c in colis]
+                                       self.map.get_tile_gid(
+                                           chunk.localpos[0] * self.chunk_size + chunk.tile_positions[c][0],
+                                           chunk.localpos[1] * self.chunk_size + chunk.tile_positions[c][1],
+                                           0)] for c in colis]
 
         return tuple(collisions), tuple(collider_types)
 
@@ -116,6 +107,8 @@ class Chunk(pg.sprite.Sprite):
         super().__init__()
         self.image = pg.Surface((size * tilesize, size * tilesize), pg.SRCALPHA)
         self.rects = []
+        # Empty cells have no rectangle, so retain each rectangle's tile position.
+        self.tile_positions = []
         self.localpos = pos
 
         self.k = k
@@ -134,6 +127,7 @@ class Chunk(pg.sprite.Sprite):
             (self.localpos[0] * self.size * self.k + pos[0] * self.k + rect.w / 3.214,
              self.localpos[1] * self.size * self.k + pos[1] * self.k + rect.h / 3.214))
         self.rects.append(rect)
+        self.tile_positions.append(tuple(pos))
 
     def update(self, direction):
         self.rects = [rect.move(direction) for rect in self.rects]
@@ -155,10 +149,10 @@ class Dark(pg.sprite.Sprite):
     def update_lamps(self, level_map: MapLoader):
         for row in level_map.chunks[level_map.chunks_area[1][0]: level_map.chunks_area[1][1]]:
             for chunk in row[level_map.chunks_area[0][0]: level_map.chunks_area[0][1]]:
-                for i, tile in enumerate(chunk.rects):
+                for tile, (x, y) in zip(chunk.rects, chunk.tile_positions):
                     tile_gid = level_map.map.get_tile_gid(
-                        chunk.localpos[0] * level_map.chunk_size + i % level_map.chunk_size,
-                        chunk.localpos[1] * level_map.chunk_size + i // level_map.chunk_size,
+                        chunk.localpos[0] * level_map.chunk_size + x,
+                        chunk.localpos[1] * level_map.chunk_size + y,
                         0)
                     tile_type = level_map.map.tiledgidmap[tile_gid]
                     if tile_type == LAMP_TILE:

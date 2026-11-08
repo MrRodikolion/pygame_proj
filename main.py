@@ -2,10 +2,13 @@ import pygame as pg
 import sys
 import sqlite3 as sql
 from time import time
+from pathlib import Path
 
 from game_components.Map import MapLoader, Camera, Dark
 from game_components.Player import Player, collider_w
 from game_components.UI import Button
+
+BASE_DIR = Path(__file__).resolve().parent
 
 
 def terminate():
@@ -101,7 +104,7 @@ def level_screen():
                     pg.display.toggle_fullscreen()
         clock.tick(60)
 
-        if player.finished or player.ui.hp_bar.hp < 0:
+        if player.finished or player.ui.hp_bar.hp <= 0:
             cur.execute('''INSERT INTO stats (bonuses, timesecs)
                         VALUES({}, {})'''.format(player.ui.bonus_counter.count, int(time() - start_t)))
             con.commit()
@@ -225,7 +228,7 @@ def dead_screen():
 if __name__ == '__main__':
     pg.init()
 
-    con = sql.Connection('./stats.db')
+    con = sql.Connection(BASE_DIR / 'stats.db')
     cur = con.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS stats (
                     id INTEGER PRIMARY KEY,
@@ -244,7 +247,8 @@ if __name__ == '__main__':
     start_screen()
 
     while True:
-        level_map = MapLoader('./data/map/level1.tmx', screen_w // collider_w - 2, 5, screen)
+        level_map = MapLoader(str(BASE_DIR / 'data' / 'map' / 'level1.tmx'),
+                              screen_w // collider_w - 2, 5, screen)
 
         player = Player(screen,
                         4 * level_map.tilesize + level_map.tilesize // 2,
@@ -253,9 +257,10 @@ if __name__ == '__main__':
         camera = Camera()
 
         level_screen()
-        if player.ui.hp_bar.hp < 0 and dead_screen():
-            break
-        if end_screen():
+        if player.ui.hp_bar.hp <= 0:
+            if dead_screen():
+                break
+        elif end_screen():
             break
 
     con.close()

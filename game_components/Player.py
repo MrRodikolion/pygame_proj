@@ -1,5 +1,6 @@
 import pygame as pg
 from math import pi, atan2, radians, degrees, cos, sin
+from pathlib import Path
 
 try:
     from Map import (MapLoader,
@@ -41,7 +42,8 @@ def load_anim_sprites(filename):
 class Player(pg.sprite.Sprite):
     def __init__(self, surface, x, y):
         super().__init__()
-        self.walk_anim, self.stand_sprite, self.jump_sprite = load_anim_sprites('./data/player/player.png')
+        sprite_file = Path(__file__).resolve().parents[1] / 'data' / 'player' / 'player.png'
+        self.walk_anim, self.stand_sprite, self.jump_sprite = load_anim_sprites(str(sprite_file))
 
         self.flashlight_maxdist = 400
         self.count_rays = 35
@@ -239,9 +241,9 @@ class Player(pg.sprite.Sprite):
                     nearest_collision = min(center_ground_collision,
                                             key=lambda x: abs(x.centerx - self.rect.x - self.collider_rect.centerx))
                     if nearest_collision.centerx - self.rect.x - self.collider_rect.centerx >= 0:
-                        self.rect.x = center_ground_collision[0].left - self.collider_rect.right
+                        self.rect.x = nearest_collision.left - self.collider_rect.right
                     else:
-                        self.rect.x = center_ground_collision[0].right - self.collider_rect.left
+                        self.rect.x = nearest_collision.right - self.collider_rect.left
 
                 upper_ground_collision = tuple(
                     filter(lambda x: -self.collider_rect.h >= x.y - self.collider_rect.bottom - self.rect.y and
